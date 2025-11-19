@@ -1,0 +1,38 @@
+AI创造力涌现引擎 (Creativity Emergence Engine)
+实现方案：混合式插件系统
+这个功能最适合采用混合式实现，结合多个插件类型和核心系统改造：
+
+方案A：基于插件的实现
+1. CreativityInjector (messagePreprocessor插件)
+
+在消息发送给AI前注入创造性元素：
+
+随机性注入：在系统提示词中动态插入随机的"思维触发器"
+实现方式：类似ImageProcessor的预处理模式，在processMessages()函数中修改消息
+配置参数：
+randomness_level: 控制随机性强度（0-1）
+trigger_frequency: 触发频率（每N条消息触发一次）
+concept_pool: 可注入的概念库路径
+2. ConceptCollider (synchronous插件)
+
+AI主动调用的概念碰撞工具：
+
+功能：接收两个不相关的概念，生成创新组合建议
+实现：
+// 插件接收参数  
+{  
+  concept_a: "量子力学",  
+  concept_b: "烹饪",  
+  collision_mode: "metaphor" // 或 "practical", "artistic"  
+}
+输出：结构化的创意组合方案，存入AI的"灵感库"（通过DailyNoteWrite）
+3. CreativityScorer (static插件)
+
+定期评估AI生成内容的创新度：
+
+工作模式：类似WeatherReporter，定期运行
+评分维度：
+新颖度（与历史记忆的差异度）
+跨域性（涉及多少不同领域）
+可行性（是否完全脱离现实）
+输出：通过{{CreativityMetrics}}占位符注入当前创造力指标

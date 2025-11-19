@@ -1,0 +1,21 @@
+{
+  "reasoning_id": "R-INTEGRATION-001",
+  "timestamp": "2025-11-19T14:32:52.484904",
+  "query": "如何提高记忆效率？",
+  "result": "使用间隔重复法",
+  "confidence": 0.85,
+  "steps": [
+    {
+      "step": 1,
+      "type": "deductive",
+      "description": "基于记忆规律"
+    },
+    {
+      "step": 2,
+      "type": "inductive",
+      "description": "总结成功案例"
+    }
+  ],
+  "step_count": 2,
+  "mermaid_diagram": "graph TD\n    START[开始: 如何提高记忆效率？...]\n    STEP1[\"1. 基于记忆规律\"]\n    START -->|deductive| STEP1\n    STEP2{\"2. 总结成功案例\"}\n    STEP1 -->|inductive| STEP2\n    END([结论: 使用间隔重复法...<br/>置信度:85%])\n    STEP2 --> END\n    style START fill:#90EE90\n    style END fill:#FFB6C1"
+}

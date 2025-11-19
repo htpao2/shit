@@ -1,0 +1,43 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "GameController",
+  "version": "1.0.0",
+  "displayName": "游戏控制器",
+  "description": "将AI的高层指令转换为具体的游戏操作",
+  "author": "VCP GameAI Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node controller.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 30000
+  },
+  "configSchema": {
+    "ACTION_MODEL_URL": {
+      "type": "string",
+      "description": "动作模型API的URL",
+      "default": "http://localhost:5000"
+    },
+    "EXECUTION_MODE": {
+      "type": "string",
+      "description": "执行模式: script(脚本) 或 model(AI模型)",
+      "default": "script"
+    },
+    "DEFAULT_ACTION_DURATION_MS": {
+      "type": "number",
+      "description": "默认动作持续时间（毫秒）",
+      "default": 100
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "ExecuteAction",
+        "description": "执行游戏操作指令。此工具支持串行调用，可一次执行多个连续操作。\n\n支持的操作类型：\n\n1. **移动 (move)**\n   - direction: 方向 (up/down/left/right/forward/backward)\n   - distance: 距离（像素或游戏单位）\n   - duration_ms: 持续时间（毫秒）\n\n2. **攻击 (attack)**\n   - target: 目标标识 (enemy_1, nearest_enemy, etc.)\n   - attack_type: 攻击类型 (basic, heavy, ranged)\n\n3. **技能 (skill)**\n   - skill_name: 技能名称\n   - target: 目标（可选）\n   - position: 释放位置 \"x,y\"（可选）\n\n4. **交互 (interact)**\n   - object: 交互对象\n   - action: 交互动作 (pickup, use, talk)\n\n5. **组合技 (combo)**\n   - combo_name: 组合技名称\n   - target: 目标\n\n**单个操作示例**：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GameController「末」,\ncommand:「始」move「末」,\ndirection:「始」left「末」,\nduration_ms:「始」500「末」\n<<<[END_TOOL_REQUEST]>>>\n\n**串行调用示例**（推荐用于战斗场景）：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GameController「末」,\ncommand1:「始」skill「末」,\nskill_name1:「始」fireball「末」,\ntarget1:「始」enemy_1「末」,\ncommand2:「始」move「末」,\ndirection2:「始」backward「末」,\nduration_ms2:「始」300「末」,\ncommand3:「始」attack「末」,\ntarget3:「始」enemy_1「末」,\nattack_type3:「始」basic「末」\n<<<[END_TOOL_REQUEST]>>>\n\n返回格式：\n{\n  \"executed_actions\": [\n    {\"command\": \"skill\", \"status\": \"success\", \"duration_ms\": 250},\n    {\"command\": \"move\", \"status\": \"success\", \"duration_ms\": 300}\n  ],\n  \"total_duration_ms\": 550,\n  \"success_rate\": 1.0\n}",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」GameController「末」,\ncommand:「始」attack「末」,\ntarget:「始」nearest_enemy「末」,\nattack_type:「始」basic「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

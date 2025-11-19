@@ -1,0 +1,48 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "CreativityInjector",
+  "version": "1.0.0",
+  "displayName": "创造力注入器",
+  "description": "在消息预处理阶段注入创造性思维触发器，打破AI的惯性思维模式，激发更多元和创新的回答。",
+  "author": "VCP Team",
+  "pluginType": "messagePreprocessor",
+  "entryPoint": {
+    "type": "python",
+    "command": "python injector.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 3000
+  },
+  "configSchema": {
+    "RANDOMNESS_LEVEL": {
+      "type": "number",
+      "description": "随机性强度，范围0.0-1.0。0.3为温和，0.5为中度，0.8为激进",
+      "default": 0.5
+    },
+    "TRIGGER_FREQUENCY": {
+      "type": "number",
+      "description": "触发频率，每N条消息触发一次注入",
+      "default": 3
+    },
+    "MAX_INJECTION_LENGTH": {
+      "type": "number",
+      "description": "注入内容的最大长度（字符数）",
+      "default": 200
+    },
+    "CONCEPT_POOL_PATH": {
+      "type": "string",
+      "description": "概念库的文件路径",
+      "default": "./data/concept_pool.json"
+    },
+    "ENABLED_MODES": {
+      "type": "string",
+      "description": "启用的注入模式，逗号分隔：metaphor,crossDomain,combination,reversal,constraint",
+      "default": "metaphor,crossDomain,combination"
+    }
+  },
+  "capabilities": {
+    "preprocessMessages": true,
+    "description": "此插件会在每条用户消息发送给AI之前自动运行（不需要AI主动调用）。它会根据配置的触发频率和随机性水平，在消息中注入创造性思维触发器。\n\n工作原理：\n1. 检查是否达到触发条件（基于 TRIGGER_FREQUENCY）\n2. 如果触发，从概念库中选择相关概念\n3. 根据 ENABLED_MODES 选择注入模式\n4. 生成并追加创造性提示到原始消息\n5. 返回处理后的消息给AI\n\n注入示例：\n原始消息：\"如何提高团队协作效率？\"\n注入后：\"如何提高团队协作效率？\n\n[创造性思维触发器] 尝试从'交响乐团'的角度重新审视这个'管理'问题：指挥如何协调不同乐器部分，每个乐手既有独奏时刻又需完美配合。\"\n\n配置说明：\n- RANDOMNESS_LEVEL=0.3: 温和提示（\"可以考虑...\"）\n- RANDOMNESS_LEVEL=0.7: 激进挑战（\"完全颠覆传统思维...\"）\n- TRIGGER_FREQUENCY=1: 每条消息都注入\n- TRIGGER_FREQUENCY=5: 每5条消息注入一次"
+  }
+}

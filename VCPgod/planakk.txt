@@ -1,0 +1,69 @@
+基于你对"学习全知"插件的需求，我来简化说明需要哪些插件以及如何改造现有功能。
+
+需要的新插件
+1. KnowledgeIndexer (static插件)
+功能：定期扫描所有记忆，构建概念关系图、规则库和模式库
+输出：通过{{KnowledgeGraph}}占位符提供索引数据
+类似于：WeatherReporter的定时更新模式 README_en.md:273
+2. OmniscientReasoner (synchronous插件)
+功能：接收问题，执行三种推理（演绎、归纳、类比），返回答案和置信度
+参数：
+query: 问题
+reasoning_depth: 推理深度
+confidence_threshold: 置信度阈值
+类似于：SciCalculator的同步调用模式 README_en.md:307
+3. ReasoningTracer (synchronous插件)
+功能：记录推理过程，生成推理图，保存到日记
+输出：推理步骤的可视化图表和文本记录
+集成：调用DailyNoteWrite保存推理历史 VCP.md:335-341
+4. ConfidenceEstimator (synchronous插件)
+功能：评估推理结果的可信度，标注不确定性
+输出：置信度分数和不确定性来源分析
+需要改造的现有功能
+1. VectorDBManager.js
+改动：为每个向量添加元信息字段 README.md:159-168
+
+添加certaintyLevel（确定性等级）
+添加derivationDepth（推导深度）
+添加dependencies（依赖关系）
+新增searchWithMetadata()方法，支持基于元信息的过滤
+2. DailyNoteWrite插件
+改动：支持新的标签类型 VCP.md:335-341
+
+添加[推理路径]标签
+添加[规则库]标签
+添加[模式库]标签
+支持存储结构化的推理图数据
+3. AgentAssistant插件
+改动：添加分布式推理验证功能 README.md:599-605
+
+新增verify_reasoning任务类型
+支持传递推理路径给其他Agent
+收集多个Agent的验证结果
+4. messageProcessor
+改动：添加推理上下文注入 README.md:156-250
+
+新增{{ReasoningContext}}占位符
+根据问题自动检索相关规则和模式
+将推理基础知识注入到AI上下文
+实现优先级
+阶段1（核心功能）：
+
+OmniscientReasoner插件 - 基础推理能力
+VectorDBManager改造 - 元信息支持
+阶段2（记录与优化）：
+3. ReasoningTracer插件 - 推理过程记录
+4. DailyNoteWrite改造 - 支持新标签
+
+阶段3（高级功能）：
+5. KnowledgeIndexer插件 - 自动索引
+6. ConfidenceEstimator插件 - 置信度评估
+7. AgentAssistant改造 - 分布式验证
+
+Notes
+这个方案的核心思想是：
+
+不存储所有信息，而是存储推理规则和模式
+不模拟所有细节，而是通过推理从有限信息推导答案
+利用现有架构：记忆系统存储规则，插件系统执行推理，Agent网络提供验证 VCP.md:387-408
+这完全符合你提出的"全知是过程而非状态"的理念，通过推理能力而非信息堆积来接近"全知"。

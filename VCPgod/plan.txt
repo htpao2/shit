@@ -1,0 +1,19 @@
+需要的新插件
+1. KnowledgeIndexer (static插件)
+功能：定期扫描所有记忆，构建概念关系图、规则库和模式库
+输出：通过{{KnowledgeGraph}}占位符提供索引数据
+类似于：WeatherReporter的定时更新模式 README_en.md:273
+2. OmniscientReasoner (synchronous插件)
+功能：接收问题，执行三种推理（演绎、归纳、类比），返回答案和置信度
+参数：
+query: 问题
+reasoning_depth: 推理深度
+confidence_threshold: 置信度阈值
+类似于：SciCalculator的同步调用模式 README_en.md:307
+3. ReasoningTracer (synchronous插件)
+功能：记录推理过程，生成推理图，保存到日记
+输出：推理步骤的可视化图表和文本记录
+集成：调用DailyNoteWrite保存推理历史 VCP.md:335-341
+4. ConfidenceEstimator (synchronous插件)
+功能：评估推理结果的可信度，标注不确定性
+输出：置信度分数和不确定性来源分析

@@ -1,0 +1,14 @@
+[
+  {
+    "type": "if-then",
+    "condition": "想要提高记忆效率，",
+    "action": "应该使用间隔重复的方法",
+    "confidence": 0.7
+  },
+  {
+    "type": "if-then",
+    "condition": "评估一个技术方案",
+    "action": "需要考虑可行性、成本和风险",
+    "confidence": 0.7
+  }
+]

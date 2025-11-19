@@ -1,0 +1,43 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "ConfidenceEstimator",
+  "version": "1.0.0",
+  "displayName": "置信度评估器",
+  "description": "评估推理结果的可信度，标注不确定性来源，提供改进建议。支持多维度评估和详细分析。",
+  "author": "VCP Development Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node confidence_estimator.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 10000
+  },
+  "configSchema": {
+    "EVALUATION_STRICTNESS": {
+      "type": "string",
+      "description": "评估严格程度 (lenient/normal/strict)",
+      "default": "normal"
+    },
+    "MIN_CONFIDENCE_THRESHOLD": {
+      "type": "number",
+      "description": "最低置信度阈值",
+      "default": 0.5
+    },
+    "ENABLE_DETAILED_ANALYSIS": {
+      "type": "boolean",
+      "description": "是否启用详细分析",
+      "default": true
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "EstimateConfidence",
+        "description": "评估推理结果的置信度。该工具从多个维度分析推理质量，识别不确定性来源，并提供改进建议。\n\n## 评估维度：\n\n### 1. 逻辑一致性 (Logic Consistency)\n检查推理过程中是否存在逻辑矛盾或冲突。\n- 分析推理步骤之间的逻辑关系\n- 识别前后矛盾的论述\n- 验证结论是否从前提合理推出\n- **评分公式**: 1 - (矛盾数 / 总步骤数)\n\n### 2. 证据充分性 (Evidence Sufficiency)\n评估支持结论的证据是否充分。\n- 统计证据数量和质量\n- 检查证据的相关性\n- 评估证据的时效性和权威性\n- **评分因素**: 证据数量、质量、多样性\n\n### 3. 前提可靠性 (Premise Reliability)\n分析推理前提的可靠程度。\n- 追溯信息来源\n- 验证前提的真实性\n- 评估假设的合理性\n- **评分依据**: 来源可靠性、验证状态\n\n### 4. 结论合理性 (Conclusion Rationality)\n判断结论是否合理可信。\n- 结论与证据的匹配度\n- 结论的保守性/激进性\n- 替代解释的考虑\n- **评分标准**: 合理性、完整性、可行性\n\n## 参数说明：\n\n- reasoning_result (对象, 必需): 推理结果对象，应包含：\n  * answer: 推理得出的答案\n  * reasoning_process: 推理过程详情（可选）\n  * confidence: 已有的置信度（可选）\n  * query: 原始问题（可选）\n\n- evaluation_criteria (数组, 可选): 自定义评估标准列表，可指定：\n  * 'logic': 仅评估逻辑一致性\n  * 'evidence': 仅评估证据充分性\n  * 'premise': 仅评估前提可靠性\n  * 'conclusion': 仅评估结论合理性\n  * 默认评估所有维度\n\n- strictness (字符串, 可选): 评估严格程度\n  * 'lenient': 宽松模式，容忍度高\n  * 'normal': 标准模式（默认）\n  * 'strict': 严格模式，标准高\n\n## 调用示例：\n\n### 示例1：基础置信度评估\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ConfidenceEstimator「末」,\nreasoning_result:「始」{\n  \"answer\": \"应该使用间隔重复法提高记忆效率\",\n  \"reasoning_process\": {\n    \"deductive\": {\"conclusion\": \"...\", \"confidence\": 0.9},\n    \"inductive\": {\"pattern\": \"...\", \"confidence\": 0.8}\n  },\n  \"confidence\": 0.85\n}「末」\n<<<[END_TOOL_REQUEST]>>>\n\n### 示例2：指定评估标准\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ConfidenceEstimator「末」,\nreasoning_result:「始」{\n  \"answer\": \"该方案可行\",\n  \"reasoning_process\": {...}\n}「末」,\nevaluation_criteria:「始」[\"logic\", \"evidence\"]「末」,\nstrictness:「始」strict「末」\n<<<[END_TOOL_REQUEST]>>>\n\n### 示例3：简单答案评估\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ConfidenceEstimator「末」,\nreasoning_result:「始」{\n  \"answer\": \"明天会下雨\",\n  \"query\": \"明天天气如何？\"\n}「末」\n<<<[END_TOOL_REQUEST]>>>\n\n## 返回内容：\n\n- overall_confidence: 综合置信度分数 (0-1)\n- dimension_scores: 各维度评分\n  * logic_consistency: 逻辑一致性得分\n  * evidence_sufficiency: 证据充分性得分\n  * premise_reliability: 前提可靠性得分\n  * conclusion_rationality: 结论合理性得分\n- uncertainty_sources: 不确定性来源列表\n  * type: 不确定性类型\n  * description: 详细描述\n  * impact: 影响程度 (low/medium/high)\n  * suggestion: 改进建议\n- risk_level: 风险等级 (low/medium/high)\n- improvement_suggestions: 改进建议列表\n- quality_grade: 质量等级 (A/B/C/D/F)\n\n## 置信度等级说明：\n\n- **0.9 - 1.0** (A级): 极高置信度，可以直接采纳\n- **0.8 - 0.9** (B级): 高置信度，基本可信\n- **0.7 - 0.8** (C级): 中等置信度，需要验证\n- **0.6 - 0.7** (D级): 较低置信度，谨慎使用\n- **< 0.6** (F级): 低置信度，不建议采纳\n\n## 风险等级判定：\n\n- **Low**: 整体置信度 >= 0.8，无严重不确定性\n- **Medium**: 整体置信度 0.6-0.8，存在一些不确定性\n- **High**: 整体置信度 < 0.6，存在严重问题\n\n## 注意事项：\n\n1. reasoning_result必须包含answer字段\n2. 如果提供reasoning_process，评估会更准确\n3. 严格模式会降低置信度评分\n4. 评估结果可用于优化推理策略\n5. 建议结合ReasoningTracer记录评估历史",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」ConfidenceEstimator「末」,\nreasoning_result:「始」{\"answer\": \"示例答案\", \"confidence\": 0.8}「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

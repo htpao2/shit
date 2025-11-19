@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+pyautogui
+pydirectinput
+requests
+numpy
+opencv-python

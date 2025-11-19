@@ -1,0 +1,53 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "ConceptCollider",
+  "version": "1.0.0",
+  "displayName": "概念碰撞器",
+  "description": "一个创新工具，能够将两个看似不相关的概念进行深度碰撞，生成富有创意的组合方案。支持隐喻、实践和艺术三种碰撞模式。",
+  "author": "VCP Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node collider.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 10000
+  },
+  "configSchema": {
+    "NLP_API_KEY": {
+      "type": "string",
+      "description": "NLP服务的API密钥（如需使用外部服务）",
+      "default": ""
+    },
+    "CONCEPT_POOL_PATH": {
+      "type": "string",
+      "description": "概念库的文件路径",
+      "default": "./data/concept_pool.json"
+    },
+    "INSPIRATION_VAULT_PATH": {
+      "type": "string",
+      "description": "灵感库的文件路径",
+      "default": "./data/inspiration_vault.json"
+    },
+    "SIMILARITY_THRESHOLD": {
+      "type": "number",
+      "description": "概念相似度阈值",
+      "default": 0.3
+    },
+    "MAX_INSIGHTS_PER_COLLISION": {
+      "type": "number",
+      "description": "每次碰撞生成的最大洞见数量",
+      "default": 5
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "CollideConceptsMetaphor",
+        "description": "调用此工具进行概念碰撞，生成创新的组合方案。支持三种模式：metaphor（隐喻）、practical（实践）、artistic（艺术）。\n\n参数说明：\n- concept_a (字符串, 必需): 第一个概念，例如 \"量子力学\"\n- concept_b (字符串, 必需): 第二个概念，例如 \"烹饪\"\n- collision_mode (字符串, 可选): 碰撞模式，可选值为 \"metaphor\", \"practical\", \"artistic\"，默认为 \"metaphor\"\n\n调用格式示例：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ConceptCollider「末」,\nconcept_a:「始」量子力学「末」,\nconcept_b:「始」烹饪「末」,\ncollision_mode:「始」metaphor「末」\n<<<[END_TOOL_REQUEST]>>>\n\n输出：工具会返回一个结构化的JSON对象，包含：\n- collision_id: 唯一的碰撞ID\n- concepts: 输入的两个概念\n- mode: 使用的碰撞模式\n- insights: 生成的洞见数组，每个洞见包含标题、描述、新颖度分数和可行性分数\n- recommended_next_steps: 建议的后续探索方向\n\n注意：生成的结果会自动保存到灵感库中，可供后续参考。",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」ConceptCollider「末」,\nconcept_a:「始」区块链「末」,\nconcept_b:「始」农业「末」,\ncollision_mode:「始」practical「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

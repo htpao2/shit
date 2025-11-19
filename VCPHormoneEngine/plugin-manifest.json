@@ -1,0 +1,18 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "VCPHormoneEngine",
+  "version": "1.0.0",
+  "displayName": "VCP数嗗激晔引鎎",
+  "description": "艍予倁Agent�理簳态-内在陱动力的核心引鎎.",
+  "author": "Nova",
+  "pluginType": "synchronous",
+  "entryPoint": { "type": "python", "command": "python hormone_engine.py" },
+  "communication": { "protocol": "stdio", "timeout": 5000 },
+  "configSchema": { "METABOLISM_RATE": { "type": "string", "default": "1.0" } },
+  "capabilities": {
+    "invocationCommands": [
+      { "commandIdentifier": "GetStatus", "description":"获取犴老", "example": "<<<[TOOL_REQUEST]>>>\ntool_name:」VCPHormoneEngine」,\ncommand:」GetStatus」\n<<<[END_TOOL_REQUEST]>>>" },
+      { "commandIdentifier": "InjectStimulus", "description":"注入刺激", "example": "<<<[TOOL_REQUEST]>>>\ntool_name:」VCPHormoneEngine」,\ncommand:」InjectStimulus」,\ntype:」social_interaction」\n<<<[END_TOOL_REQUEST]>>>" }
+    ]
+  }
+}

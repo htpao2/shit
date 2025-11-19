@@ -1,0 +1,56 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "CreativityScorer",
+  "version": "1.0.0",
+  "displayName": "创造力评分器",
+  "description": "定期评估AI生成内容的创新度，提供新颖度、跨域性和可行性三个维度的量化指标，形成反馈循环。",
+  "author": "VCP Team",
+  "pluginType": "static",
+  "entryPoint": {
+    "type": "python",
+    "command": "python scorer.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 15000
+  },
+  "configSchema": {
+    "NOVELTY_WEIGHT": {
+      "type": "number",
+      "description": "新颖度权重",
+      "default": 0.4
+    },
+    "CROSS_DOMAIN_WEIGHT": {
+      "type": "number",
+      "description": "跨域性权重",
+      "default": 0.35
+    },
+    "FEASIBILITY_WEIGHT": {
+      "type": "number",
+      "description": "可行性权重",
+      "default": 0.25
+    },
+    "HISTORY_DB_PATH": {
+      "type": "string",
+      "description": "历史记忆库的文件路径",
+      "default": "./data/creativity_history.json"
+    },
+    "SCORING_INTERVAL": {
+      "type": "number",
+      "description": "评分间隔（秒）",
+      "default": 3600
+    },
+    "AUTO_RUN_ON_SESSION_END": {
+      "type": "boolean",
+      "description": "会话结束时自动运行",
+      "default": true
+    }
+  },
+  "capabilities": {
+    "staticExecution": {
+      "interval": 3600,
+      "autoRunOnSessionEnd": true
+    },
+    "description": "此插件会定期自动运行（不需要AI主动调用），评估最近AI输出内容的创造力表现。\n\n评估维度：\n1. 新颖度 (Novelty Score): 0.0-1.0，与历史内容的差异度\n2. 跨域性 (Cross-Domain Score): 0.0-1.0，涉及领域的广度和深度\n3. 可行性 (Feasibility Score): 0.0-1.0，想法的实际可行性\n\n综合创造力指数计算：\nCreativity Index = (Novelty × 0.4) + (Cross-Domain × 0.35) + (Feasibility × 0.25)\n\n输出格式：\n插件会生成一个包含创造力指标的占位符 {{CreativityMetrics}}，这个占位符会被自动注入到AI的系统提示词中，让AI了解自己的创造力表现并做出调整。\n\n示例输出：\n{{CreativityMetrics}}\n当前创造力指标：\n━━━━━━━━━━━━━━━━━━\n📊 新颖度：★★★★☆ (0.78)\n🔀 跨域性：★★★☆☆ (0.65)\n✅ 可行性：★★★★★ (0.92)\n━━━━━━━━━━━━━━━━━━\n综合创造力指数：0.77 (高)\n\n近期趋势：📈 持续上升\n最强领域：科技×艺术跨界\n建议：可尝试更激进的概念组合"
+  }
+}

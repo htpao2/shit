@@ -1,0 +1,58 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "KnowledgeIndexer",
+  "version": "1.0.0",
+  "displayName": "知识索引器",
+  "description": "定期扫描所有记忆数据，构建概念关系图、规则库和模式库，通过占位符提供索引数据给AI增强上下文。",
+  "author": "VCP Development Team",
+  "pluginType": "static",
+  "entryPoint": {
+    "type": "python",
+    "command": "python knowledge_indexer.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 300000
+  },
+  "staticUpdateSchedule": {
+    "enabled": true,
+    "intervalMinutes": 60,
+    "placeholderName": "KnowledgeGraph"
+  },
+  "configSchema": {
+    "MEMORY_DATA_PATH": {
+      "type": "string",
+      "description": "记忆数据存储路径",
+      "default": "./Memory"
+    },
+    "INDEX_OUTPUT_PATH": {
+      "type": "string",
+      "description": "索引输出路径",
+      "default": "./KnowledgeIndex"
+    },
+    "MAX_CONCEPTS": {
+      "type": "integer",
+      "description": "最大概念数量",
+      "default": 1000
+    },
+    "MIN_CONCEPT_FREQUENCY": {
+      "type": "integer",
+      "description": "概念最小出现频率",
+      "default": 2
+    },
+    "ENABLE_NLP": {
+      "type": "boolean",
+      "description": "是否启用NLP分析",
+      "default": true
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "BuildIndex",
+        "description": "手动触发知识索引构建。此插件主要通过定期自动执行来更新知识图谱，但也可以手动调用立即构建索引。\n\n功能：\n- 扫描记忆目录中的所有Markdown文档\n- 提取关键概念和实体\n- 构建概念关系图\n- 识别规则和模式\n- 生成知识图谱占位符 {{KnowledgeGraph}}\n\n此工具无需参数。构建完成后会自动更新系统提示词中的知识图谱占位符。\n\n调用格式：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」KnowledgeIndexer「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」KnowledgeIndexer「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

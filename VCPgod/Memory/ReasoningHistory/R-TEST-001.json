@@ -1,0 +1,16 @@
+{
+  "reasoning_id": "R-TEST-001",
+  "timestamp": "2025-11-19T14:32:51.271220",
+  "query": "测试问题",
+  "result": "测试结论",
+  "confidence": 0.85,
+  "steps": [
+    {
+      "step": 1,
+      "type": "deductive",
+      "description": "测试步骤"
+    }
+  ],
+  "step_count": 1,
+  "mermaid_diagram": "graph TD\n    START[开始: 测试问题...]\n    STEP1[\"1. 测试步骤\"]\n    START -->|deductive| STEP1\n    END([结论: 测试结论...<br/>置信度:85%])\n    STEP1 --> END\n    style START fill:#90EE90\n    style END fill:#FFB6C1"
+}

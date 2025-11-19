@@ -1,0 +1,18 @@
+{
+  "name": "confidence-estimator",
+  "version": "1.0.0",
+  "description": "VCP Confidence Assessment Engine - 评估推理结果的置信度",
+  "main": "confidence_estimator.js",
+  "scripts": {
+    "test": "node confidence_estimator.js"
+  },
+  "keywords": [
+    "confidence",
+    "assessment",
+    "evaluation",
+    "uncertainty",
+    "vcp"
+  ],
+  "author": "VCP Development Team",
+  "license": "MIT"
+}

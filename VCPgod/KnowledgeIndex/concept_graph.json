@@ -1,0 +1,960 @@
+{
+  "nodes": [
+    {
+      "id": "记忆",
+      "label": "记忆",
+      "frequency": 7,
+      "documents": [
+        "test-memory-2.md",
+        "test-memory-1.md"
+      ]
+    },
+    {
+      "id": "##",
+      "label": "##",
+      "frequency": 5,
+      "documents": [
+        "test-memory-2.md",
+        "test-memory-1.md"
+      ]
+    },
+    {
+      "id": "间隔",
+      "label": "间隔",
+      "frequency": 3,
+      "documents": [
+        "test-memory-1.md"
+      ]
+    },
+    {
+      "id": "使用",
+      "label": "使用",
+      "frequency": 3,
+      "documents": [
+        "test-memory-2.md",
+        "test-memory-1.md"
+      ]
+    },
+    {
+      "id": "技术",
+      "label": "技术",
+      "frequency": 3,
+      "documents": [
+        "test-memory-2.md"
+      ]
+    },
+    {
+      "id": "方案",
+      "label": "方案",
+      "frequency": 3,
+      "documents": [
+        "test-memory-2.md"
+      ]
+    },
+    {
+      "id": "项目",
+      "label": "项目",
+      "frequency": 3,
+      "documents": [
+        "test-memory-2.md"
+      ]
+    },
+    {
+      "id": "测试",
+      "label": "测试",
+      "frequency": 2,
+      "documents": [
+        "test-memory-2.md",
+        "test-memory-1.md"
+      ]
+    },
+    {
+      "id": "文档",
+      "label": "文档",
+      "frequency": 2,
+      "documents": [
+        "test-memory-2.md",
+        "test-memory-1.md"
+      ]
+    },
+    {
+      "id": "规律",
+      "label": "规律",
+      "frequency": 2,
+      "documents": [
+        "test-memory-1.md"
+      ]
+    },
+    {
+      "id": "提高",
+      "label": "提高",
+      "frequency": 2,
+      "documents": [
+        "test-memory-1.md"
+      ]
+    },
+    {
+      "id": "效率",
+      "label": "效率",
+      "frequency": 2,
+      "documents": [
+        "test-memory-1.md"
+      ]
+    },
+    {
+      "id": "应该",
+      "label": "应该",
+      "frequency": 2,
+      "documents": [
+        "test-memory-2.md",
+        "test-memory-1.md"
+      ]
+    },
+    {
+      "id": "重复",
+      "label": "重复",
+      "frequency": 2,
+      "documents": [
+        "test-memory-1.md"
+      ]
+    },
+    {
+      "id": "成功",
+      "label": "成功",
+      "frequency": 2,
+      "documents": [
+        "test-memory-2.md",
+        "test-memory-1.md"
+      ]
+    },
+    {
+      "id": "评估",
+      "label": "评估",
+      "frequency": 2,
+      "documents": [
+        "test-memory-2.md"
+      ]
+    },
+    {
+      "id": "经验",
+      "label": "经验",
+      "frequency": 2,
+      "documents": [
+        "test-memory-2.md"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "source": "测试",
+      "target": "记忆",
+      "type": "co-occurrence",
+      "context": "# 测试记忆文档1"
+    },
+    {
+      "id": "e1",
+      "source": "测试",
+      "target": "文档",
+      "type": "co-occurrence",
+      "context": "# 测试记忆文档1"
+    },
+    {
+      "id": "e9",
+      "source": "记忆",
+      "target": "文档",
+      "type": "co-occurrence",
+      "context": "# 测试记忆文档1"
+    },
+    {
+      "id": "e10",
+      "source": "记忆",
+      "target": "记忆",
+      "type": "co-occurrence",
+      "context": "# 测试记忆文档1"
+    },
+    {
+      "id": "e25",
+      "source": "记忆",
+      "target": "##",
+      "type": "co-occurrence",
+      "context": "## 记忆规律"
+    },
+    {
+      "id": "e27",
+      "source": "记忆",
+      "target": "规律",
+      "type": "co-occurrence",
+      "context": "## 记忆规律"
+    },
+    {
+      "id": "e54",
+      "source": "记忆",
+      "target": "间隔",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e55",
+      "source": "记忆",
+      "target": "提高",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e57",
+      "source": "记忆",
+      "target": "效率",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e58",
+      "source": "记忆",
+      "target": "应该",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e59",
+      "source": "记忆",
+      "target": "使用",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e61",
+      "source": "记忆",
+      "target": "重复",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e184",
+      "source": "记忆",
+      "target": "记忆",
+      "type": "cause",
+      "context": "间隔重复符合记忆规律， -> 能够提高记忆效率"
+    },
+    {
+      "id": "e186",
+      "source": "记忆",
+      "target": "提高",
+      "type": "cause",
+      "context": "间隔重复符合记忆规律， -> 能够提高记忆效率"
+    },
+    {
+      "id": "e188",
+      "source": "记忆",
+      "target": "效率",
+      "type": "cause",
+      "context": "间隔重复符合记忆规律， -> 能够提高记忆效率"
+    },
+    {
+      "id": "e245",
+      "source": "文档",
+      "target": "记忆",
+      "type": "co-occurrence",
+      "context": "# 测试记忆文档1"
+    },
+    {
+      "id": "e250",
+      "source": "##",
+      "target": "记忆",
+      "type": "co-occurrence",
+      "context": "## 记忆规律"
+    },
+    {
+      "id": "e251",
+      "source": "##",
+      "target": "规律",
+      "type": "co-occurrence",
+      "context": "## 记忆规律"
+    },
+    {
+      "id": "e252",
+      "source": "##",
+      "target": "##",
+      "type": "co-occurrence",
+      "context": "## 记忆规律"
+    },
+    {
+      "id": "e270",
+      "source": "##",
+      "target": "间隔",
+      "type": "co-occurrence",
+      "context": "## 间隔重复法"
+    },
+    {
+      "id": "e272",
+      "source": "##",
+      "target": "重复",
+      "type": "co-occurrence",
+      "context": "## 间隔重复法"
+    },
+    {
+      "id": "e286",
+      "source": "##",
+      "target": "成功",
+      "type": "co-occurrence",
+      "context": "## 成功案例"
+    },
+    {
+      "id": "e290",
+      "source": "##",
+      "target": "技术",
+      "type": "co-occurrence",
+      "context": "## 技术方案评估"
+    },
+    {
+      "id": "e291",
+      "source": "##",
+      "target": "方案",
+      "type": "co-occurrence",
+      "context": "## 技术方案评估"
+    },
+    {
+      "id": "e292",
+      "source": "##",
+      "target": "评估",
+      "type": "co-occurrence",
+      "context": "## 技术方案评估"
+    },
+    {
+      "id": "e302",
+      "source": "##",
+      "target": "项目",
+      "type": "co-occurrence",
+      "context": "## 相似项目经验"
+    },
+    {
+      "id": "e303",
+      "source": "##",
+      "target": "经验",
+      "type": "co-occurrence",
+      "context": "## 相似项目经验"
+    },
+    {
+      "id": "e312",
+      "source": "规律",
+      "target": "##",
+      "type": "co-occurrence",
+      "context": "## 记忆规律"
+    },
+    {
+      "id": "e313",
+      "source": "规律",
+      "target": "记忆",
+      "type": "co-occurrence",
+      "context": "## 记忆规律"
+    },
+    {
+      "id": "e317",
+      "source": "规律",
+      "target": "规律",
+      "type": "co-occurrence",
+      "context": "## 记忆规律"
+    },
+    {
+      "id": "e320",
+      "source": "规律",
+      "target": "间隔",
+      "type": "co-occurrence",
+      "context": "因为间隔重复符合记忆规律，所以能够提高记忆效率"
+    },
+    {
+      "id": "e321",
+      "source": "规律",
+      "target": "提高",
+      "type": "co-occurrence",
+      "context": "因为间隔重复符合记忆规律，所以能够提高记忆效率"
+    },
+    {
+      "id": "e323",
+      "source": "规律",
+      "target": "效率",
+      "type": "co-occurrence",
+      "context": "因为间隔重复符合记忆规律，所以能够提高记忆效率"
+    },
+    {
+      "id": "e325",
+      "source": "规律",
+      "target": "重复",
+      "type": "co-occurrence",
+      "context": "因为间隔重复符合记忆规律，所以能够提高记忆效率"
+    },
+    {
+      "id": "e337",
+      "source": "规律",
+      "target": "记忆",
+      "type": "cause",
+      "context": "间隔重复符合记忆规律， -> 能够提高记忆效率"
+    },
+    {
+      "id": "e339",
+      "source": "规律",
+      "target": "提高",
+      "type": "cause",
+      "context": "间隔重复符合记忆规律， -> 能够提高记忆效率"
+    },
+    {
+      "id": "e341",
+      "source": "规律",
+      "target": "效率",
+      "type": "cause",
+      "context": "间隔重复符合记忆规律， -> 能够提高记忆效率"
+    },
+    {
+      "id": "e357",
+      "source": "间隔",
+      "target": "间隔",
+      "type": "co-occurrence",
+      "context": "## 间隔重复法"
+    },
+    {
+      "id": "e358",
+      "source": "间隔",
+      "target": "重复",
+      "type": "co-occurrence",
+      "context": "## 间隔重复法"
+    },
+    {
+      "id": "e359",
+      "source": "间隔",
+      "target": "##",
+      "type": "co-occurrence",
+      "context": "## 间隔重复法"
+    },
+    {
+      "id": "e367",
+      "source": "间隔",
+      "target": "提高",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e368",
+      "source": "间隔",
+      "target": "记忆",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e369",
+      "source": "间隔",
+      "target": "效率",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e370",
+      "source": "间隔",
+      "target": "应该",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e371",
+      "source": "间隔",
+      "target": "使用",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e405",
+      "source": "间隔",
+      "target": "规律",
+      "type": "co-occurrence",
+      "context": "因为间隔重复符合记忆规律，所以能够提高记忆效率"
+    },
+    {
+      "id": "e424",
+      "source": "间隔",
+      "target": "记忆",
+      "type": "cause",
+      "context": "间隔重复符合记忆规律， -> 能够提高记忆效率"
+    },
+    {
+      "id": "e426",
+      "source": "间隔",
+      "target": "提高",
+      "type": "cause",
+      "context": "间隔重复符合记忆规律， -> 能够提高记忆效率"
+    },
+    {
+      "id": "e428",
+      "source": "间隔",
+      "target": "效率",
+      "type": "cause",
+      "context": "间隔重复符合记忆规律， -> 能够提高记忆效率"
+    },
+    {
+      "id": "e454",
+      "source": "重复",
+      "target": "##",
+      "type": "co-occurrence",
+      "context": "## 间隔重复法"
+    },
+    {
+      "id": "e455",
+      "source": "重复",
+      "target": "间隔",
+      "type": "co-occurrence",
+      "context": "## 间隔重复法"
+    },
+    {
+      "id": "e456",
+      "source": "重复",
+      "target": "重复",
+      "type": "co-occurrence",
+      "context": "## 间隔重复法"
+    },
+    {
+      "id": "e457",
+      "source": "重复",
+      "target": "使用",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e458",
+      "source": "重复",
+      "target": "记忆",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e462",
+      "source": "重复",
+      "target": "提高",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e464",
+      "source": "重复",
+      "target": "效率",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e473",
+      "source": "重复",
+      "target": "规律",
+      "type": "co-occurrence",
+      "context": "因为间隔重复符合记忆规律，所以能够提高记忆效率"
+    },
+    {
+      "id": "e482",
+      "source": "重复",
+      "target": "记忆",
+      "type": "cause",
+      "context": "间隔重复符合记忆规律， -> 能够提高记忆效率"
+    },
+    {
+      "id": "e484",
+      "source": "重复",
+      "target": "提高",
+      "type": "cause",
+      "context": "间隔重复符合记忆规律， -> 能够提高记忆效率"
+    },
+    {
+      "id": "e486",
+      "source": "重复",
+      "target": "效率",
+      "type": "cause",
+      "context": "间隔重复符合记忆规律， -> 能够提高记忆效率"
+    },
+    {
+      "id": "e502",
+      "source": "提高",
+      "target": "记忆",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e503",
+      "source": "提高",
+      "target": "效率",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e504",
+      "source": "提高",
+      "target": "应该",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e505",
+      "source": "提高",
+      "target": "使用",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e506",
+      "source": "提高",
+      "target": "间隔",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e507",
+      "source": "提高",
+      "target": "重复",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e513",
+      "source": "提高",
+      "target": "提高",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e526",
+      "source": "提高",
+      "target": "规律",
+      "type": "co-occurrence",
+      "context": "因为间隔重复符合记忆规律，所以能够提高记忆效率"
+    },
+    {
+      "id": "e532",
+      "source": "效率",
+      "target": "应该",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e533",
+      "source": "效率",
+      "target": "使用",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e534",
+      "source": "效率",
+      "target": "间隔",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e535",
+      "source": "效率",
+      "target": "重复",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e537",
+      "source": "效率",
+      "target": "记忆",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e541",
+      "source": "效率",
+      "target": "提高",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e543",
+      "source": "效率",
+      "target": "效率",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e550",
+      "source": "效率",
+      "target": "规律",
+      "type": "co-occurrence",
+      "context": "因为间隔重复符合记忆规律，所以能够提高记忆效率"
+    },
+    {
+      "id": "e554",
+      "source": "应该",
+      "target": "使用",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e555",
+      "source": "应该",
+      "target": "间隔",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e556",
+      "source": "应该",
+      "target": "重复",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e558",
+      "source": "应该",
+      "target": "记忆",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e562",
+      "source": "应该",
+      "target": "提高",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e564",
+      "source": "应该",
+      "target": "效率",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e565",
+      "source": "使用",
+      "target": "间隔",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e566",
+      "source": "使用",
+      "target": "重复",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e567",
+      "source": "使用",
+      "target": "使用",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e568",
+      "source": "使用",
+      "target": "记忆",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e572",
+      "source": "使用",
+      "target": "提高",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e574",
+      "source": "使用",
+      "target": "效率",
+      "type": "co-occurrence",
+      "context": "如果想要提高记忆效率，那么应该使用间隔重复的方法"
+    },
+    {
+      "id": "e589",
+      "source": "使用",
+      "target": "技术",
+      "type": "co-occurrence",
+      "context": "项目B也使用了相同技术栈，效果良好"
+    },
+    {
+      "id": "e590",
+      "source": "成功",
+      "target": "项目",
+      "type": "co-occurrence",
+      "context": "之前的项目A采用了类似架构，取得了成功"
+    },
+    {
+      "id": "e591",
+      "source": "技术",
+      "target": "方案",
+      "type": "co-occurrence",
+      "context": "## 技术方案评估"
+    },
+    {
+      "id": "e592",
+      "source": "技术",
+      "target": "评估",
+      "type": "co-occurrence",
+      "context": "## 技术方案评估"
+    },
+    {
+      "id": "e594",
+      "source": "技术",
+      "target": "技术",
+      "type": "co-occurrence",
+      "context": "## 技术方案评估"
+    },
+    {
+      "id": "e596",
+      "source": "技术",
+      "target": "##",
+      "type": "co-occurrence",
+      "context": "## 技术方案评估"
+    },
+    {
+      "id": "e616",
+      "source": "技术",
+      "target": "项目",
+      "type": "co-occurrence",
+      "context": "项目B也使用了相同技术栈，效果良好"
+    },
+    {
+      "id": "e619",
+      "source": "技术",
+      "target": "使用",
+      "type": "co-occurrence",
+      "context": "项目B也使用了相同技术栈，效果良好"
+    },
+    {
+      "id": "e626",
+      "source": "方案",
+      "target": "评估",
+      "type": "co-occurrence",
+      "context": "## 技术方案评估"
+    },
+    {
+      "id": "e628",
+      "source": "方案",
+      "target": "技术",
+      "type": "co-occurrence",
+      "context": "## 技术方案评估"
+    },
+    {
+      "id": "e629",
+      "source": "方案",
+      "target": "方案",
+      "type": "co-occurrence",
+      "context": "## 技术方案评估"
+    },
+    {
+      "id": "e630",
+      "source": "方案",
+      "target": "##",
+      "type": "co-occurrence",
+      "context": "## 技术方案评估"
+    },
+    {
+      "id": "e645",
+      "source": "方案",
+      "target": "经验",
+      "type": "co-occurrence",
+      "context": "基于这些经验，新方案应该是可行的"
+    },
+    {
+      "id": "e648",
+      "source": "方案",
+      "target": "应该",
+      "type": "co-occurrence",
+      "context": "基于这些经验，新方案应该是可行的"
+    },
+    {
+      "id": "e654",
+      "source": "评估",
+      "target": "评估",
+      "type": "co-occurrence",
+      "context": "## 技术方案评估"
+    },
+    {
+      "id": "e655",
+      "source": "评估",
+      "target": "技术",
+      "type": "co-occurrence",
+      "context": "## 技术方案评估"
+    },
+    {
+      "id": "e656",
+      "source": "评估",
+      "target": "方案",
+      "type": "co-occurrence",
+      "context": "## 技术方案评估"
+    },
+    {
+      "id": "e657",
+      "source": "评估",
+      "target": "##",
+      "type": "co-occurrence",
+      "context": "## 技术方案评估"
+    },
+    {
+      "id": "e674",
+      "source": "项目",
+      "target": "经验",
+      "type": "co-occurrence",
+      "context": "## 相似项目经验"
+    },
+    {
+      "id": "e675",
+      "source": "项目",
+      "target": "项目",
+      "type": "co-occurrence",
+      "context": "## 相似项目经验"
+    },
+    {
+      "id": "e682",
+      "source": "项目",
+      "target": "成功",
+      "type": "co-occurrence",
+      "context": "之前的项目A采用了类似架构，取得了成功"
+    },
+    {
+      "id": "e688",
+      "source": "项目",
+      "target": "使用",
+      "type": "co-occurrence",
+      "context": "项目B也使用了相同技术栈，效果良好"
+    },
+    {
+      "id": "e689",
+      "source": "项目",
+      "target": "技术",
+      "type": "co-occurrence",
+      "context": "项目B也使用了相同技术栈，效果良好"
+    },
+    {
+      "id": "e695",
+      "source": "经验",
+      "target": "项目",
+      "type": "co-occurrence",
+      "context": "## 相似项目经验"
+    },
+    {
+      "id": "e697",
+      "source": "经验",
+      "target": "经验",
+      "type": "co-occurrence",
+      "context": "## 相似项目经验"
+    },
+    {
+      "id": "e699",
+      "source": "经验",
+      "target": "方案",
+      "type": "co-occurrence",
+      "context": "基于这些经验，新方案应该是可行的"
+    },
+    {
+      "id": "e700",
+      "source": "经验",
+      "target": "应该",
+      "type": "co-occurrence",
+      "context": "基于这些经验，新方案应该是可行的"
+    }
+  ],
+  "metadata": {
+    "total_concepts": 66,
+    "indexed_concepts": 17,
+    "total_relationships": 115,
+    "total_documents": 2
+  }
+}

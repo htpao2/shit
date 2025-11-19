@@ -1,0 +1,63 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "GameObserver",
+  "version": "1.0.0",
+  "displayName": "游戏状态观察器",
+  "description": "捕获游戏画面和状态，为AI提供实时游戏信息",
+  "author": "VCP GameAI Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "python",
+    "command": "python observer.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 10000
+  },
+  "configSchema": {
+    "GAME_WINDOW_TITLE": {
+      "type": "string",
+      "description": "要捕获的游戏窗口标题（支持部分匹配）",
+      "default": ""
+    },
+    "CAPTURE_INTERVAL_MS": {
+      "type": "number",
+      "description": "Service模式下的捕获间隔（毫秒）",
+      "default": 1000
+    },
+    "ENABLE_OCR": {
+      "type": "boolean",
+      "description": "是否启用OCR文字识别",
+      "default": true
+    },
+    "ENABLE_OBJECT_DETECTION": {
+      "type": "boolean",
+      "description": "是否启用目标检测",
+      "default": false
+    },
+    "OCR_REGIONS": {
+      "type": "string",
+      "description": "OCR识别区域配置（JSON格式）",
+      "default": "{\"health\": [10, 10, 100, 30], \"mana\": [10, 50, 100, 70]}"
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "CaptureGameState",
+        "description": "捕获当前游戏状态，返回截图和识别的信息。\n\n功能：\n1. 截取游戏窗口画面\n2. 识别文字信息（血量、蓝量、金币等）\n3. 检测目标位置（如果启用）\n4. 返回Base64编码的截图供AI分析\n\n参数：\n- window_title (字符串, 可选): 指定要捕获的窗口标题，留空则使用配置中的默认值\n- capture_region (字符串, 可选): 指定捕获区域，格式为 \"x,y,width,height\"，留空则捕获整个窗口\n- enable_ocr (布尔, 可选): 是否启用OCR识别，默认为true\n- ocr_regions (字符串, 可选): 自定义OCR区域，JSON格式，如 {\"hp\": [10,10,100,30]}\n\n返回格式：\n{\n  \"timestamp\": \"2025-01-15T16:42:00Z\",\n  \"window_info\": {\n    \"title\": \"游戏窗口标题\",\n    \"size\": {\"width\": 1920, \"height\": 1080}\n  },\n  \"screenshot_base64\": \"iVBORw0KGgo...\",\n  \"recognized_data\": {\n    \"health\": \"85\",\n    \"mana\": \"60\",\n    \"gold\": \"1250\"\n  },\n  \"detected_objects\": [\n    {\"type\": \"enemy\", \"bbox\": [100, 200, 150, 250], \"confidence\": 0.92}\n  ]\n}\n\n调用格式：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GameObserver「末」,\nwindow_title:「始」我的游戏「末」,\nenable_ocr:「始」true「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」GameObserver「末」,\nwindow_title:「始」Minecraft「末」,\ncapture_region:「始」0,0,1920,1080「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GetWindowList",
+        "description": "获取当前所有可见窗口的列表，帮助确定要捕获的游戏窗口。\n\n返回格式：\n{\n  \"windows\": [\n    {\"title\": \"窗口1\", \"pid\": 1234},\n    {\"title\": \"窗口2\", \"pid\": 5678}\n  ]\n}\n\n调用格式：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GameObserver「末」,\ncommand:「始」GetWindowList「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  },
+  "webSocketPush": {
+    "enabled": true,
+    "messageType": "game_state_update",
+    "usePluginResultAsMessage": true,
+    "targetClientType": "VCPLog"
+  }
+}
