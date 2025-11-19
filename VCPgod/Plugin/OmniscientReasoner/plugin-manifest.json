@@ -1,0 +1,48 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "OmniscientReasoner",
+  "version": "1.0.0",
+  "displayName": "全知推理器",
+  "description": "执行三种推理模式（演绎、归纳、类比），返回答案和置信度。结合知识图谱进行多模式推理分析。",
+  "author": "VCP Development Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node omniscient_reasoner.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 30000
+  },
+  "configSchema": {
+    "REASONING_MODEL": {
+      "type": "string",
+      "description": "推理模型选择 (deductive/inductive/analogical/hybrid)",
+      "default": "hybrid"
+    },
+    "MAX_REASONING_DEPTH": {
+      "type": "integer",
+      "description": "最大推理深度",
+      "default": 5
+    },
+    "KNOWLEDGE_INDEX_PATH": {
+      "type": "string",
+      "description": "知识索引路径",
+      "default": "./KnowledgeIndex"
+    },
+    "DEFAULT_CONFIDENCE_THRESHOLD": {
+      "type": "number",
+      "description": "默认置信度阈值",
+      "default": 0.7
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "Reason",
+        "description": "执行全知推理分析。该工具结合知识图谱{{KnowledgeGraph}}，使用三种推理模式对问题进行深度分析。\n\n## 推理模式：\n\n### 1. 演绎推理 (Deductive)\n从一般原理推导具体结论。\n格式：大前提 + 小前提 => 结论\n示例：所有人都会死（大前提）+ 苏格拉底是人（小前提） => 苏格拉底会死（结论）\n\n### 2. 归纳推理 (Inductive)\n从具体案例总结一般规律。\n格式：案例1 + 案例2 + 案例N => 一般规律\n示例：观察到太阳每天升起 => 太阳明天也会升起\n\n### 3. 类比推理 (Analogical)\n基于相似性进行推断。\n格式：A与B相似 + A有特性X => B可能也有特性X\n示例：地球有水和生命 + 火星与地球相似 => 火星可能曾有水和生命\n\n## 参数说明：\n\n- query (字符串, 必需): 需要推理的问题或命题\n- reasoning_depth (整数, 可选): 推理深度，范围1-10，默认5。深度越大，推理越详细但耗时越长\n- confidence_threshold (浮点数, 可选): 置信度阈值，范围0-1，默认0.7。低于此值的结论会被标记为不确定\n- reasoning_mode (字符串, 可选): 推理模式选择\n  * 'deductive': 仅使用演绎推理\n  * 'inductive': 仅使用归纳推理\n  * 'analogical': 仅使用类比推理\n  * 'all': 使用所有三种模式（默认）\n\n## 返回内容：\n\n- answer: 推理得出的最终答案\n- confidence: 整体置信度分数 (0-1)\n- reasoning_process: 各推理模式的详细过程和中间结果\n- uncertainty_sources: 不确定性来源分析\n\n## 调用示例：\n\n### 示例1：基础推理\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」OmniscientReasoner「末」,\nquery:「始」如何提高记忆效率？「末」\n<<<[END_TOOL_REQUEST]>>>\n\n### 示例2：指定推理深度和模式\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」OmniscientReasoner「末」,\nquery:「始」基于过往经验，明天的工作重点应该是什么？「末」,\nreasoning_depth:「始」7「末」,\nreasoning_mode:「始」inductive「末」\n<<<[END_TOOL_REQUEST]>>>\n\n### 示例3：高置信度推理\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」OmniscientReasoner「末」,\nquery:「始」这个方案是否可行？「末」,\nconfidence_threshold:「始」0.85「末」,\nreasoning_mode:「始」all「末」\n<<<[END_TOOL_REQUEST]>>>\n\n## 注意事项：\n\n1. 推理结果会自动调用ConfidenceEstimator进行可信度评估\n2. 推理过程可以被ReasoningTracer记录到日记系统\n3. 该工具会自动访问知识图谱{{KnowledgeGraph}}以增强推理上下文\n4. 推理深度越大，结果越详细但执行时间越长\n5. 对于复杂问题，建议使用'all'模式获得多角度分析",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」OmniscientReasoner「末」,\nquery:「始」为什么需要定期备份数据？「末」,\nreasoning_mode:「始」all「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

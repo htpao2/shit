@@ -1,0 +1,4 @@
+  File "C:\Users\MSI-NB\Desktop\新建文件夹\VCPgod\Plugin\ReasoningTracer\reasoning_tracer.py", line 326
+    except Exception as e:
+    ^^^^^^
+SyntaxError: invalid syntax

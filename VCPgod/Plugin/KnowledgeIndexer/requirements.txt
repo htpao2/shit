@@ -1,0 +1,8 @@
+# KnowledgeIndexer Dependencies
+
+# 中文分词（可选，提高概念提取质量）
+jieba>=0.42.1
+
+# 如需更高级的NLP功能可添加：
+# spacy>=3.7.0
+# numpy>=1.24.0

@@ -1,0 +1,67 @@
+{
+  "status": "success",
+  "result": {
+    "overall_confidence": 0.6747,
+    "dimension_scores": {
+      "logic_consistency": 0.5599999999999999,
+      "evidence_sufficiency": 0.35,
+      "premise_reliability": 0.75,
+      "conclusion_rationality": 0.5319999999999999
+    },
+    "uncertainty_sources": [
+      {
+        "type": "missing_process",
+        "description": "缺少详细的推理过程",
+        "impact": "medium",
+        "suggestion": "提供详细的推理步骤和中间过程"
+      },
+      {
+        "type": "too_brief",
+        "description": "结论过于简短，可能不够详细",
+        "impact": "low",
+        "suggestion": "审查并改进此方面"
+      },
+      {
+        "type": "low_relevance",
+        "description": "答案与问题的相关性较低",
+        "impact": "high",
+        "suggestion": "确保答案直接回应原始问题"
+      },
+      {
+        "type": "low_dimension_score",
+        "description": "logic_consistency维度得分较低（56%）",
+        "impact": "medium",
+        "suggestion": "检查推理步骤之间的逻辑连贯性"
+      },
+      {
+        "type": "low_dimension_score",
+        "description": "evidence_sufficiency维度得分较低（35%）",
+        "impact": "high",
+        "suggestion": "收集更多证据和案例支持"
+      },
+      {
+        "type": "low_dimension_score",
+        "description": "conclusion_rationality维度得分较低（53%）",
+        "impact": "medium",
+        "suggestion": "确保结论合理且直接回应问题"
+      }
+    ],
+    "risk_level": "high",
+    "improvement_suggestions": [
+      "优先解决1个高影响问题",
+      "关注1个中等影响问题",
+      "重点改进evidence_sufficiency（当前35%）"
+    ],
+    "quality_grade": "D",
+    "evaluation_details": {
+      "strictness": "normal",
+      "evaluated_dimensions": [
+        "logic_consistency",
+        "evidence_sufficiency",
+        "premise_reliability",
+        "conclusion_rationality"
+      ],
+      "total_issues": 3
+    }
+  }
+}

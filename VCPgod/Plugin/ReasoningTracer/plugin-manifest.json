@@ -1,0 +1,48 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "ReasoningTracer",
+  "version": "1.0.0",
+  "displayName": "推理追踪器",
+  "description": "记录推理过程，生成推理流程图，保存到日记系统。支持可视化展示和历史回溯。",
+  "author": "VCP Development Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "python",
+    "command": "python reasoning_tracer.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 15000
+  },
+  "configSchema": {
+    "TRACE_OUTPUT_PATH": {
+      "type": "string",
+      "description": "推理追踪输出路径",
+      "default": "./Memory/ReasoningHistory"
+    },
+    "ENABLE_VISUALIZATION": {
+      "type": "boolean",
+      "description": "是否生成可视化图表",
+      "default": true
+    },
+    "SAVE_TO_DIARY": {
+      "type": "boolean",
+      "description": "是否自动保存到日记",
+      "default": true
+    },
+    "MAX_TRACE_HISTORY": {
+      "type": "integer",
+      "description": "最大保留的追踪历史数量",
+      "default": 100
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "TraceReasoning",
+        "description": "追踪和记录推理过程。该工具接收推理结果，生成可视化流程图，并可选择性保存到日记系统。\n\n## 功能特性：\n\n### 1. 推理步骤记录\n- 捕获每个推理步骤的详细信息\n- 记录时间戳和执行顺序\n- 标注推理类型和置信度\n\n### 2. 流程图生成\n- 生成Mermaid格式的推理流程图\n- 支持多种图表类型（流程图、序列图、状态图）\n- 可选导出SVG/PNG格式\n\n### 3. 日记系统集成\n- 自动调用DailyNoteWrite工具保存历史\n- 格式化推理记录为Markdown文档\n- 创建标签和索引便于检索\n\n### 4. 历史回溯\n- 查询过往推理记录\n- 分析推理模式和成功率\n- 支持按日期、主题、置信度筛选\n\n## 参数说明：\n\n- reasoning_id (字符串, 必需): 推理任务的唯一标识符，格式建议为 R-YYYYMMDD-NNN\n- reasoning_steps (JSON数组, 必需): 推理步骤列表，每个步骤包含：\n  * step: 步骤序号\n  * type: 步骤类型（如 'deductive', 'inductive', 'analogical'）\n  * description: 步骤描述\n  * confidence: 置信度（可选）\n  * data: 步骤相关数据（可选）\n- query (字符串, 必需): 原始问题或查询\n- result (字符串, 必需): 推理得出的结论\n- confidence (浮点数, 可选): 整体置信度，默认0.7\n- save_to_diary (布尔, 可选): 是否保存到日记，默认true\n- visualization_type (字符串, 可选): 可视化类型，可选值：\n  * 'flowchart': 流程图（默认）\n  * 'sequence': 序列图\n  * 'graph': 关系图\n\n## 调用示例：\n\n### 示例1：基础推理追踪\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ReasoningTracer「末」,\nreasoning_id:「始」R-20250115-001「末」,\nquery:「始」如何提高记忆效率？「末」,\nreasoning_steps:「始」[{\"step\":1,\"type\":\"deductive\",\"description\":\"基于记忆规律推导\"},{\"step\":2,\"type\":\"inductive\",\"description\":\"总结成功案例\"}]「末」,\nresult:「始」应该使用间隔重复法「末」\n<<<[END_TOOL_REQUEST]>>>\n\n### 示例2：详细追踪带可视化\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ReasoningTracer「末」,\nreasoning_id:「始」R-20250115-002「末」,\nquery:「始」这个方案是否可行？「末」,\nreasoning_steps:「始」[{\"step\":1,\"type\":\"analogical\",\"description\":\"查找相似案例\",\"confidence\":0.8},{\"step\":2,\"type\":\"deductive\",\"description\":\"应用已知规则\",\"confidence\":0.9}]「末」,\nresult:「始」方案可行，置信度85%「末」,\nconfidence:「始」0.85「末」,\nvisualization_type:「始」sequence「末」\n<<<[END_TOOL_REQUEST]>>>\n\n### 示例3：不保存到日记\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ReasoningTracer「末」,\nreasoning_id:「始」R-20250115-003「末」,\nquery:「始」临时测试问题「末」,\nreasoning_steps:「始」[{\"step\":1,\"type\":\"deductive\",\"description\":\"快速推理\"}]「末」,\nresult:「始」测试结论「末」,\nsave_to_diary:「始」false「末」\n<<<[END_TOOL_REQUEST]>>>\n\n## 返回内容：\n\n- reasoning_id: 推理任务ID\n- trace_summary: 追踪摘要信息\n- mermaid_diagram: Mermaid格式的可视化图表\n- saved_to_diary: 是否已保存到日记\n- diary_path: 日记文件路径（如果保存）\n- visualization: Base64编码的图表数据（如果启用）\n\n## 注意事项：\n\n1. reasoning_steps必须是有效的JSON数组\n2. reasoning_id应该是唯一的，避免重复\n3. 推理步骤会按照step字段排序\n4. 可视化功能需要相关依赖库（matplotlib等）\n5. 日记保存会创建新的Markdown文件",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」ReasoningTracer「末」,\nreasoning_id:「始」R-20250115-001「末」,\nquery:「始」示例问题「末」,\nreasoning_steps:「始」[{\"step\":1,\"type\":\"deductive\",\"description\":\"演绎推理\"},{\"step\":2,\"type\":\"inductive\",\"description\":\"归纳总结\"}]「末」,\nresult:「始」示例结论「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

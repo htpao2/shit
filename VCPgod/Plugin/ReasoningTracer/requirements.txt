@@ -1,0 +1,8 @@
+# ReasoningTracer Dependencies
+
+# 可视化图表生成（可选）
+matplotlib>=3.7.0
+
+# 如需更高级的图表功能可添加：
+# seaborn>=0.12.0
+# plotly>=5.14.0

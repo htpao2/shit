@@ -1,0 +1,18 @@
+{
+  "name": "omniscient-reasoner",
+  "version": "1.0.0",
+  "description": "VCP Multi-Mode Reasoning Engine - 执行演绎、归纳、类比三种推理模式",
+  "main": "omniscient_reasoner.js",
+  "scripts": {
+    "test": "node omniscient_reasoner.js"
+  },
+  "keywords": [
+    "reasoning",
+    "deduction",
+    "induction",
+    "analogy",
+    "vcp"
+  ],
+  "author": "VCP Development Team",
+  "license": "MIT"
+}
