@@ -1,0 +1,92 @@
+https://deepwiki.com/search/mcpmdtxt_c64c1d05-5644-47f5-a630-a0bf12bd8139
+
+
+项目改造计划：从MCP服务到独立文件处理工具
+核心需求描述
+将现有的regenrek/deepwiki-mcp项目从MCP（Model Context Protocol）服务架构改造为独立的文件处理工具，具体要求：
+
+完全移除MCP依赖：删除@modelcontextprotocol/sdk框架和相关工具注册代码 package.json:57
+保留核心功能：维持所有现有的内容处理能力
+新增文件保存：支持将处理结果保存为.md和.txt格式文件
+技术架构分析
+当前系统的核心组件已经与MCP框架解耦，主要业务逻辑位于：
+
+网页爬取：crawl函数 deepwiki.ts:110-115
+内容转换：htmlToMarkdown函数 deepwiki.ts:118-122
+搜索功能：正则匹配和高亮处理 deepwikiSearch.ts:66-86
+实施计划
+阶段1：依赖清理和架构重构
+// 移除的依赖包  
+- "@modelcontextprotocol/sdk": "^1.9.0"  
+- "@chatmcp/sdk": "^1.0.6"  
+  
+// 保留的核心依赖  
++ "zod": "^3.24.3"           // 输入验证  
++ "ofetch": "^1.4.1"         // HTTP请求  
++ "unified": "^11.0.5"       // Markdown处理  
++ "linkedom": "^0.18.9"      // DOM解析
+阶段2：核心API重构
+基于现有的FetchRequest和SearchRequestschema deepwiki.ts:9-18 ，创建独立的API接口：
+
+// 新的API接口设计  
+interface DeepwikiProcessor {  
+  fetch(params: TFetchRequest): Promise<ProcessResult>  
+  search(params: TSearchRequest): Promise<SearchResult>  
+  saveToFile(content: string, format: 'md' | 'txt', filepath: string): Promise<void>  
+}  
+  
+interface ProcessResult {  
+  pages: PageObject[]  
+  totalBytes: number  
+  totalElapsedMs: number  
+  errors?: ErrorObject[]  
+}
+阶段3：文件保存功能实现
+扩展现有的测试用例中的文件保存模式 crawler.test.ts:14-16 ：
+
+// 文件保存功能伪代码  
+function saveContent(pages: PageObject[], options: SaveOptions) {  
+  for (const page of pages) {  
+    const filename = `${sanitizeFilename(page.path)}.${options.format}`  
+    const filepath = path.join(options.outputDir, filename)  
+      
+    if (options.format === 'md') {  
+      writeFileSync(filepath, page.markdown)  
+    } else if (options.format === 'txt') {  
+      // 移除Markdown格式，保留纯文本  
+      const plainText = stripMarkdown(page.markdown)  
+      writeFileSync(filepath, plainText)  
+    }  
+  }  
+}
+阶段4：CLI工具重构
+将现有的MCP工具注册逻辑 deepwiki.ts:14-18 改造为CLI命令：
+
+# 新的CLI接口设计  
+deepwiki fetch <url> --output-dir ./output --format md  
+deepwiki search <url> --query "search term" --format txt  
+deepwiki batch --config batch-config.json
+阶段5：错误处理和验证保留
+继续使用现有的ErrorEnvelope和验证逻辑 deepwiki.ts:55-64 ，确保输入验证和错误处理的一致性。
+
+技术实现细节
+URL规范化保留
+维持现有的多格式URL支持 deepwiki.ts:20-72 ：
+
+完整URL：https://deepwiki.com/owner/repo
+简短格式：owner/repo
+关键词：react
+内容处理管道保留
+保持现有的HTML处理和Markdown转换流程，包括：
+
+HTML清理和标准化
+链接重写和相对路径处理
+内容聚合和分页模式支持
+验收标准
+功能完整性：所有现有功能（爬取、转换、搜索）正常工作
+文件输出：支持.md和.txt格式的文件保存
+CLI可用性：提供直观的命令行接口
+错误处理：保持现有的验证和错误报告机制
+性能保持：处理速度和内存使用与原版本相当
+Notes
+该改造计划充分利用了现有代码的模块化设计。核心业务逻辑与MCP框架的松耦合使得重构风险较低。测试用例 crawler.test.ts:53-97 已经验证了核心功能的独立性，为改造提供了良好的基础。建议采用渐进式重构，先移除MCP依赖，再逐步添加新功能。

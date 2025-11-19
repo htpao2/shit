@@ -1,0 +1,3 @@
+@echo off
+echo Testing VCPToolBox fetch...
+echo {"command":"FetchContent","url":"lioensky/VCPToolBox","saveFormat":"md","outputPath":"./VCPToolBox-output","verbose":true} | node deepwiki-processor.mjs

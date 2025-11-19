@@ -1,0 +1,2 @@
+cd deepwiki-mcp-personal
+echo {"command":"FetchContent","url":"lioensky/VCPToolBox","saveFormat":"md","outputPath":"./VCPToolBox-output","verbose":true} | node deepwiki-processor.mjs

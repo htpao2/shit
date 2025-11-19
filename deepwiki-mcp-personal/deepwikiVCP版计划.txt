@@ -1,0 +1,198 @@
+VCP插件改造计划：DeepwikiProcessor
+核心需求重述
+将现有的regenrek/deepwiki-mcp项目改造为VCP同步插件，实现：
+
+移除MCP框架依赖：删除@modelcontextprotocol/sdk和@chatmcp/sdk package.json:56-57
+保留核心功能：维持网页爬取、Markdown转换和搜索能力
+新增文件保存：支持.md和.txt格式的本地文件保存
+VCP标准接口：通过stdin/stdout与主服务通信
+VCP插件架构设计
+1. plugin-manifest.json配置
+{  
+  "manifestVersion": "1.0.0",  
+  "name": "DeepwikiProcessor",  
+  "version": "1.0.0",  
+  "displayName": "Deepwiki内容处理器",  
+  "description": "专业的deepwiki.com内容爬取、转换和保存工具",  
+  "author": "Kevin Kern",  
+  "pluginType": "synchronous",  
+  "entryPoint": {  
+    "type": "nodejs",  
+    "command": "node deepwiki-processor.js"  
+  },  
+  "communication": {  
+    "protocol": "stdio",  
+    "timeout": 60000  
+  },  
+  "configSchema": {  
+    "OUTPUT_DIR": {  
+      "type": "string",  
+      "description": "文件保存的默认目录路径",  
+      "default": "./output"  
+    },  
+    "MAX_CONCURRENCY": {  
+      "type": "number",  
+      "description": "最大并发请求数",  
+      "default": 5  
+    }  
+  },  
+  "capabilities": {  
+    "invocationCommands": [  
+      {  
+        "commandIdentifier": "FetchContent",  
+        "description": "从deepwiki.com获取内容并转换为Markdown格式。\n参数:\n- url (字符串, 必需): deepwiki URL、owner/repo格式或关键词\n- mode (字符串, 可选): 'aggregate'或'pages'模式，默认'aggregate'\n- maxDepth (数字, 可选): 爬取深度，默认1，最大1\n- saveFormat (字符串, 可选): 保存格式'md'或'txt'，默认'md'\n- outputPath (字符串, 可选): 自定义保存路径\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」DeepwikiProcessor「末」,\ncommand:「始」FetchContent「末」,\nurl:「始」https://deepwiki.com/owner/repo「末」,\nmode:「始」aggregate「末」,\nsaveFormat:「始」md「末」\n<<<[END_TOOL_REQUEST]>>>",  
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」DeepwikiProcessor「末」,\ncommand:「始」FetchContent「末」,\nurl:「始」react「末」,\nsaveFormat:「始」txt「末」\n<<<[END_TOOL_REQUEST]>>>"  
+      },  
+      {  
+        "commandIdentifier": "SearchContent",  
+        "description": "在deepwiki内容中搜索关键词并返回高亮片段。\n参数:\n- url (字符串, 必需): deepwiki URL或关键词\n- query (字符串, 必需): 搜索关键词\n- maxMatches (数字, 可选): 最大匹配数，默认10\n- saveResults (布尔, 可选): 是否保存搜索结果，默认false\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」DeepwikiProcessor「末」,\ncommand:「始」SearchContent「末」,\nurl:「始」shadcn/ui「末」,\nquery:「始」button component「末」\n<<<[END_TOOL_REQUEST]>>>"  
+      }  
+    ]  
+  }  
+}
+2. 插件本体实现 (deepwiki-processor.js)
+基于现有的核心功能模块，实现VCP标准的stdin/stdout通信：
+
+// 核心模式实现  
+const fs = require('fs').promises;  
+const path = require('path');  
+  
+// 复用现有模块  
+const { crawl } = require('./lib/httpCrawler');  
+const { htmlToMarkdown } = require('./converter/htmlToMarkdown');  
+const { FetchRequest } = require('./schemas/deepwiki');  
+  
+async function main() {  
+  try {  
+    // 1. 读取stdin  
+    const input = await readStdin();  
+    const request = JSON.parse(input);  
+      
+    // 2. 命令分发  
+    let result;  
+    switch (request.command) {  
+      case 'FetchContent':  
+        result = await handleFetchContent(request);  
+        break;  
+      case 'SearchContent':  
+        result = await handleSearchContent(request);  
+        break;  
+      default:  
+        throw new Error(`Unknown command: ${request.command}`);  
+    }  
+      
+    // 3. 输出结果  
+    console.log(JSON.stringify({  
+      status: "success",  
+      result: result  
+    }));  
+      
+  } catch (error) {  
+    console.log(JSON.stringify({  
+      status: "error",  
+      error: error.message  
+    }));  
+  }  
+    
+  process.exit(0);  
+}
+3. 核心功能重构
+FetchContent命令实现：
+
+async function handleFetchContent(request) {  
+  // 复用现有URL规范化逻辑  
+  const normalizedUrl = await normalizeUrl(request.url);  
+    
+  // 复用现有爬取逻辑  
+  const crawlResult = await crawl({  
+    root: new URL(normalizedUrl),  
+    maxDepth: request.maxDepth || 1,  
+    emit: () => {},  
+    verbose: false  
+  });  
+    
+  // 复用现有转换逻辑  
+  const pages = await Promise.all(  
+    Object.entries(crawlResult.html).map(async ([path, html]) => ({  
+      path,  
+      markdown: await htmlToMarkdown(html, request.mode || 'aggregate')  
+    }))  
+  );  
+    
+  // 新增文件保存功能  
+  if (request.saveFormat) {  
+    await saveToFiles(pages, request);  
+  }  
+    
+  return {  
+    content: pages.map(page => ({  
+      type: 'text',  
+      text: `# ${page.path}\n\n${page.markdown}`  
+    })),  
+    savedFiles: request.saveFormat ? await getSavedFilePaths(pages, request) : null  
+  };  
+}
+文件保存功能实现：
+
+async function saveToFiles(pages, request) {  
+  const outputDir = request.outputPath || process.env.OUTPUT_DIR || './output';  
+  await fs.mkdir(outputDir, { recursive: true });  
+    
+  for (const page of pages) {  
+    const filename = sanitizeFilename(page.path);  
+    const extension = request.saveFormat === 'txt' ? 'txt' : 'md';  
+    const filepath = path.join(outputDir, `${filename}.${extension}`);  
+      
+    let content = page.markdown;  
+    if (request.saveFormat === 'txt') {  
+      // 移除Markdown格式，保留纯文本  
+      content = stripMarkdown(content);  
+    }  
+      
+    await fs.writeFile(filepath, content, 'utf8');  
+  }  
+}
+4. 批量调用支持
+支持VCP的串行调用语法，处理带数字后缀的参数：
+
+function parseBatchRequest(request) {  
+  const commands = [];  
+  let index = 1;  
+    
+  while (request[`command${index}`]) {  
+    const command = {  
+      command: request[`command${index}`],  
+      url: request[`url${index}`],  
+      mode: request[`mode${index}`],  
+      saveFormat: request[`saveFormat${index}`],  
+      // ... 其他参数  
+    };  
+    commands.push(command);  
+    index++;  
+  }  
+    
+  return commands.length > 0 ? commands : [request];  
+}
+技术实现细节
+保留的核心模块
+URL规范化：继续使用resolveRepo和extractKeyword函数 deepwiki.ts:19-71
+HTML爬取：保留crawl函数的完整功能 deepwiki.ts:110-115
+内容转换：维持htmlToMarkdown转换逻辑 deepwiki.ts:117-123
+搜索功能：保留正则匹配和高亮处理 deepwikiSearch.ts:66-87
+错误处理增强
+继续使用Zod验证和ErrorEnvelope结构 deepwiki.ts:55-64 ，但适配VCP的错误输出格式。
+
+配置管理
+通过config.env文件管理环境变量：
+
+OUTPUT_DIR=./deepwiki-output  
+MAX_CONCURRENCY=10  
+REQUEST_TIMEOUT=60000  
+验收标准
+VCP兼容性：完全符合VCP同步插件标准
+功能完整性：所有原有功能正常工作
+文件保存：支持MD和TXT格式保存
+批量处理：支持串行调用语法
+错误处理：提供清晰的错误信息和状态码
+Notes
+该VCP插件设计充分利用了现有代码的模块化架构。通过保留核心业务逻辑 deepwiki.ts:110-132 和验证机制 deepwiki.ts:9-18 ，只需要重构通信层面的MCP接口为VCP的stdin/stdout模式。测试用例中的文件保存模式 crawler.test.ts:14-16 为新功能提供了良好的参考实现。

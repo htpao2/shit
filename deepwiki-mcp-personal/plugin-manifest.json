@@ -1,0 +1,48 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "DeepwikiProcessor",
+  "version": "1.0.0",
+  "displayName": "Deepwiki内容处理器",
+  "description": "专业的deepwiki.com内容爬取、转换和保存工具",
+  "author": "Kevin Kern",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node deepwiki-processor.mjs"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 60000
+  },
+  "configSchema": {
+    "OUTPUT_DIR": {
+      "type": "string",
+      "description": "文件保存的默认目录路径",
+      "default": "./output"
+    },
+    "MAX_CONCURRENCY": {
+      "type": "number",
+      "description": "最大并发请求数",
+      "default": 5
+    },
+    "REQUEST_TIMEOUT": {
+      "type": "number",
+      "description": "请求超时时间（毫秒）",
+      "default": 30000
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "FetchContent",
+        "description": "从deepwiki.com获取内容并转换为Markdown格式。\n参数:\n- url (字符串, 必需): deepwiki URL、owner/repo格式或关键词\n- mode (字符串, 可选): 'aggregate'或'pages'模式，默认'aggregate'\n- maxDepth (数字, 可选): 爬取深度，默认1，最大1\n- saveFormat (字符串, 可选): 保存格式'md'或'txt'，默认不保存\n- outputPath (字符串, 可选): 自定义保存路径\n- verbose (布尔, 可选): 是否显示详细日志，默认false\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」DeepwikiProcessor「末」,\ncommand:「始」FetchContent「末」,\nurl:「始」https://deepwiki.com/owner/repo「末」,\nmode:「始」aggregate「末」,\nsaveFormat:「始」md「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」DeepwikiProcessor「末」,\ncommand:「始」FetchContent「末」,\nurl:「始」react「末」,\nsaveFormat:「始」txt「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "SearchContent",
+        "description": "在deepwiki内容中搜索关键词并返回高亮片段。\n参数:\n- url (字符串, 必需): deepwiki URL或关键词\n- query (字符串, 必需): 搜索关键词\n- maxMatches (数字, 可选): 最大匹配数，默认10\n- maxDepth (数字, 可选): 爬取深度，默认1\n- saveResults (布尔, 可选): 是否保存搜索结果，默认false\n- outputPath (字符串, 可选): 保存路径（当saveResults为true时）\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」DeepwikiProcessor「末」,\ncommand:「始」SearchContent「末」,\nurl:「始」shadcn/ui「末」,\nquery:「始」button component「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」DeepwikiProcessor「末」,\ncommand:「始」SearchContent「末」,\nurl:「始」vercel/ai「末」,\nquery:「始」stream「末」,\nmaxMatches:「始」5「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
