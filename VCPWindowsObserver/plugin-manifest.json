@@ -1,0 +1,87 @@
+{
+    "manifestVersion": "1.0.0",
+    "name": "VCPWindowsObserver",
+    "version": "0.2.1",
+    "displayName": "Windows Observer & Controller",
+    "description": "A VCP plugin to observe the Windows desktop state and control mouse/keyboard actions.",
+    "author": "Kilo",
+    "pluginType": "synchronous",
+    "entryPoint": {
+    "type": "python",
+    "command": "python ./main.py"
+    },
+    "communication": {
+        "protocol": "stdio",
+        "timeout": 150000
+    },
+    "configSchema": [],
+    "capabilities": {
+        "invocationCommands": [
+            {
+                "command": "get_desktop_info",
+                "description": "获取当前Windows桌面的完整快照，包括所有UI元素的树状结构和屏幕截图。无参数。",
+                "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPWindowsObserver「末」,\ncommand:「始」get_desktop_info「末」\n<<<[END_TOOL_REQUEST]>>>"
+            },
+            {
+                "command": "launch_tool",
+                "description": "通过名称启动一个应用程序。参数: name (字符串, 必需)。",
+                "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPWindowsObserver「末」,\ncommand:「始」launch_tool「末」,\nparameters:「始」{\"name\": \"notepad\"}「末」\n<<<[END_TOOL_REQUEST]>>>"
+            },
+            {
+                "command": "state_tool",
+                "description": "获取桌面的当前状态，包括活动和打开的应用，以及可交互/信息性元素的列表。无参数。",
+                "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPWindowsObserver「末」,\ncommand:「始」state_tool「末」\n<<<[END_TOOL_REQUEST]>>>"
+            },
+            {
+                "command": "clipboard_tool",
+                "description": "与系统剪贴板交互。参数: mode ('copy'或'paste', 必需), text (字符串, 'copy'模式下必需)。",
+                "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPWindowsObserver「末」,\ncommand:「始」clipboard_tool「末」,\nparameters:「始」{\"mode\": \"copy\", \"text\": \"Hello World\"}「末」\n<<<[END_TOOL_REQUEST]>>>"
+            },
+            {
+                "command": "click_tool",
+                "description": "在指定位置执行鼠标点击。参数: loc ([x, y]数组, 必需), button (字符串, 可选, 默认'left'), clicks (整数, 可选, 默认1)。",
+                "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPWindowsObserver「末」,\ncommand:「始」click_tool「末」,\nparameters:「始」{\"loc\": [100, 200]}「末」\n<<<[END_TOOL_REQUEST]>>>"
+            },
+            {
+                "command": "type_tool",
+                "description": "在指定位置输入文本。参数: text (字符串, 必需), loc ([x, y]数组, 可选), clear (布尔值, 可选, 默认false)。",
+                "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPWindowsObserver「末」,\ncommand:「始」type_tool「末」,\nparameters:「始」{\"loc\": [100, 200], \"text\": \"Hello\"}「末」\n<<<[END_TOOL_REQUEST]>>>"
+            },
+            {
+                "command": "scroll_tool",
+                "description": "向上或向下滚动鼠标滚轮。参数: direction ('up'或'down', 必需), amount (整数, 必需)。",
+                "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPWindowsObserver「末」,\ncommand:「始」scroll_tool「末」,\nparameters:「始」{\"direction\": \"down\", \"amount\": 100}「末」\n<<<[END_TOOL_REQUEST]>>>"
+            },
+            {
+                "command": "drag_tool",
+                "description": "将元素从起始位置拖动到结束位置。参数: from_loc ([x, y]数组, 必需), to_loc ([x, y]数组, 必需)。",
+                "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPWindowsObserver「末」,\ncommand:「始」drag_tool「末」,\nparameters:「始」{\"from_loc\": [100, 200], \"to_loc\": [300, 400]}「末」\n<<<[END_TOOL_REQUEST]>>>"
+            },
+            {
+                "command": "move_tool",
+                "description": "将鼠标指针移动到指定位置。参数: to_loc ([x, y]数组, 必需)。",
+                "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPWindowsObserver「末」,\ncommand:「始」move_tool「末」,\nparameters:「始」{\"to_loc\": [500, 500]}「末」\n<<<[END_TOOL_REQUEST]>>>"
+            },
+            {
+                "command": "shortcut_tool",
+                "description": "按下组合键（热键/快捷键）。参数: shortcut (字符串数组, 必需)。",
+                "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPWindowsObserver「末」,\ncommand:「始」shortcut_tool「末」,\nparameters:「始」{\"shortcut\": [\"ctrl\", \"c\"]}「末」\n<<<[END_TOOL_REQUEST]>>>"
+            },
+            {
+                "command": "key_tool",
+                "description": "按下一个单独的按键。参数: key (字符串, 必需)。",
+                "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPWindowsObserver「末」,\ncommand:「始」key_tool「末」,\nparameters:「始」{\"key\": \"enter\"}「末」\n<<<[END_TOOL_REQUEST]>>>"
+            },
+            {
+                "command": "wait_tool",
+                "description": "暂停执行指定的秒数。参数: duration (数字, 必需)。",
+                "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPWindowsObserver「末」,\ncommand:「始」wait_tool「末」,\nparameters:「始」{\"duration\": 5}「末」\n<<<[END_TOOL_REQUEST]>>>"
+            },
+            {
+                "command": "scrape_tool",
+                "description": "从给定的URL中抓取主要内容。参数: url (字符串, 必需), format (字符串, 可选, 默认'markdown')。",
+                "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPWindowsObserver「末」,\ncommand:「始」scrape_tool「末」,\nparameters:「始」{\"url\": \"https://www.example.com\"}「末」\n<<<[END_TOOL_REQUEST]>>>"
+            }
+        ]
+    }
+}

@@ -1,0 +1,46 @@
+{
+  "name": "VCPScholarV2",
+  "displayName": "学术搜索插件V2",
+  "version": "2.0.0",
+  "description": "一个强大的学术搜索引擎，可以从 ArXiv, PubMed, Google Scholar 等多个来源搜索、下载和阅读论文。",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "command": "python ./server.py"
+  },
+  "communication": {
+    "protocol": "stdio"
+  },
+  "configSchema": [],
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "command": "search_arxiv",
+        "description": "从 arXiv 搜索学术论文。\n参数:\n- query (必需): 搜索关键词 (例如 'machine learning')。\n- max_results (可选, 默认10): 返回的最大论文数量。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool:「始」VCPScholarV2「末」\ncommand:「始」search_arxiv「末」\nquery:「始」machine learning「末」\nmax_results:「始」5「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "search_pubmed",
+        "description": "从 PubMed 搜索学术论文。\n参数:\n- query (必需): 搜索关键词。\n- max_results (可选, 默认10): 返回的最大论文数量。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool:「始」VCPScholarV2「末」\ncommand:「始」search_pubmed「末」\nquery:「始」cancer research「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "search_biorxiv",
+        "description": "从 bioRxiv 搜索学术论文。\n参数:\n- query (必需): 搜索关键词。\n- max_results (可选, 默认10): 返回的最大论文数量。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool:「始」VCPScholarV2「末」\ncommand:「始」search_biorxiv「末」\nquery:「始」genetics「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "search_medrxiv",
+        "description": "从 medRxiv 搜索学术论文。\n参数:\n- query (必需): 搜索关键词。\n- max_results (可选, 默认10): 返回的最大论文数量。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool:「始」VCPScholarV2「末」\ncommand:「始」search_medrxiv「末」\nquery:「始」covid-19 vaccine「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "search_google_scholar",
+        "description": "从 Google Scholar 搜索学术论文。\n参数:\n- query (必需): 搜索关键词。\n- max_results (可选, 默认10): 返回的最大论文数量。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool:「始」VCPScholarV2「末」\ncommand:「始」search_google_scholar「末」\nquery:「始」quantum computing「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "download_arxiv",
+        "description": "下载 arXiv 论文的 PDF。\n参数:\n- paper_id (必需): arXiv 论文 ID (例如 '2106.12345')。\n- save_path (可选, 默认'./downloads'): PDF 保存目录。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool:「始」VCPScholarV2「末」\ncommand:「始」download_arxiv「末」\npaper_id:「始」2106.12345「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "read_arxiv_paper",
+        "description": "读取并提取 arXiv 论文 PDF 的文本内容。\n参数:\n- paper_id (必需): arXiv 论文 ID。\n- save_path (可选, 默认'./downloads'): PDF 保存目录。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool:「始」VCPScholarV2「末」\ncommand:「始」read_arxiv_paper「末」\npaper_id:「始」2106.12345「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

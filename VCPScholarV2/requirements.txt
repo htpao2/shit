@@ -1,0 +1,5 @@
+httpx
+requests
+feedparser
+PyPDF2
+beautifulsoup4
