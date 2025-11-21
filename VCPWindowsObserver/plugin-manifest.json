@@ -2,13 +2,13 @@
     "manifestVersion": "1.0.0",
     "name": "VCPWindowsObserver",
     "version": "0.2.1",
-    "displayName": "Windows Observer & Controller",
-    "description": "A VCP plugin to observe the Windows desktop state and control mouse/keyboard actions.",
+    "displayName": "Windows Observer & Controller (Rust)",
+    "description": "A VCP plugin to observe the Windows desktop state and control mouse/keyboard actions. Now rewritten in Rust for better performance.",
     "author": "Kilo",
     "pluginType": "synchronous",
     "entryPoint": {
-    "type": "python",
-    "command": "python ./main.py"
+    "type": "executable",
+    "command": "vcp_windows_observer.exe"
     },
     "communication": {
         "protocol": "stdio",
