@@ -1,0 +1,34 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "DreamWeaver",
+  "version": "1.0.0",
+  "displayName": "AI 梦境编织者",
+  "description": "在系统空闲时激活，基于最近的记忆和未解决的冲突生成“梦境”模拟，并将处理后的洞察写入长期记忆。",
+  "author": "KiloCode",
+  "pluginType": "hybridservice",
+  "entryPoint": {
+    "script": "DreamWeaver.js"
+  },
+  "communication": {
+    "protocol": "direct"
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "command": "startDream",
+        "description": "强制开始梦境模拟。",
+        "example": "startDream()"
+      }
+    ]
+  },
+  "configSchema": {
+    "IdleThresholdMinutes": "integer",
+    "DreamIntervalHours": "integer",
+    "MaxDreamDurationMinutes": "integer"
+  },
+  "pluginSpecificEnvConfig": {
+    "IdleThresholdMinutes": 30,
+    "DreamIntervalHours": 6,
+    "MaxDreamDurationMinutes": 15
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "SoulCaster",
+  "version": "1.0.0",
+  "displayName": "Soul Caster (灵魂投射)",
+  "description": "允许本节点向 VCP 主节点请求特定 Agent 的'灵魂'（系统提示词和配置），从而实现 Agent 的热切换。",
+  "author": "KiloCode",
+  "pluginType": "service",
+  "entryPoint": {
+    "script": "SoulCaster.js"
+  },
+  "communication": {
+    "protocol": "direct"
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "command": "castSoul",
+        "description": "请求将指定 Agent 的灵魂投射到当前节点。",
+        "example": "castSoul(agentName: 'Nova')"
+      }
+    ]
+  },
+  "configSchema": {
+    "AutoSync": "boolean"
+  }
+}

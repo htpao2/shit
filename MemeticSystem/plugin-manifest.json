@@ -1,0 +1,38 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "MemeticSystem",
+  "version": "1.0.0",
+  "displayName": "Memetic Infection System (模因感染系统)",
+  "description": "追踪对话中的重复模式（模因），评估其感染力，并允许模因修改 Agent 的行为或被净化。",
+  "author": "KiloCode",
+  "pluginType": "hybridservice",
+  "entryPoint": {
+    "script": "MemeTracker.js"
+  },
+  "communication": {
+    "protocol": "direct"
+  },
+  "capabilities": {
+    "systemPromptPlaceholders": [
+      {
+        "placeholder": "{{ActiveMemes}}",
+        "description": "当前活跃的模因列表及其对 Agent 的影响指令。"
+      }
+    ],
+    "invocationCommands": [
+      {
+        "command": "purifyMeme",
+        "description": "净化指定的有害模因。",
+        "example": "purifyMeme(memeId: 'meme_123')"
+      }
+    ]
+  },
+  "configSchema": {
+    "InfectionThreshold": "integer",
+    "DecayRate": "integer"
+  },
+  "pluginSpecificEnvConfig": {
+    "InfectionThreshold": 3,
+    "DecayRate": 1
+  }
+}
