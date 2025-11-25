@@ -1,0 +1,83 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "TaskBoard",
+  "displayName": "冒险者公会任务板",
+  "version": "1.0.0",
+  "description": "一个去中心化的任务管理系统，允许Agent自主发布、接取、更新和完成任务。支持多Agent协作和技能匹配。",
+  "author": "VCPToolBox",
+  "license": "MIT",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "command": "node TaskBoardPlugin.js",
+    "timeout": 30000
+  },
+  "communication": {
+    "protocol": "stdio"
+  },
+  "configSchema": {
+    "TASK_BOARD_DATA_DIR": {
+      "type": "string",
+      "description": "任务数据存储目录（相对于插件目录）",
+      "default": "./data"
+    },
+    "MAX_ACTIVE_TASKS": {
+      "type": "integer",
+      "description": "单个Agent同时可接取的最大任务数",
+      "default": 3
+    },
+    "TASK_TIMEOUT_HOURS": {
+      "type": "integer",
+      "description": "任务超时时间（小时），超时后自动释放",
+      "default": 24
+    },
+    "DEBUG_MODE": {
+      "type": "boolean",
+      "description": "是否开启调试日志",
+      "default": false
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "ListTasks",
+        "description": "功能: 列出任务板上的所有任务，可按状态和技能过滤。\n参数:\n- status (字符串, 可选): 过滤任务状态，可选值: 'open', 'in_progress', 'submitted', 'completed', 'failed', 'all'。默认 'open'。\n- skill_filter (字符串, 可选): 按技能标签过滤，例如 'programming', 'research'。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」ListTasks「末」,\nstatus:「始」open「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GetTask",
+        "description": "功能: 获取指定任务的详细信息。\n参数:\n- task_id (字符串, 必需): 任务的唯一标识符。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」GetTask「末」,\ntask_id:「始」task-xxx-xxx「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "PostTask",
+        "description": "功能: 发布一个新任务到任务板。任何Agent都可以发布任务。\n参数:\n- title (字符串, 必需): 任务标题，简明扼要。\n- description (字符串, 必需): 任务详细描述，包括目标、要求、验收标准等。\n- required_skills (字符串数组, 可选): 所需技能标签列表，如 ['programming', 'nodejs', 'api']。\n- priority (字符串, 可选): 优先级，可选 'low', 'medium', 'high', 'urgent'。默认 'medium'。\n- reward (字符串, 可选): 完成奖励描述（荣誉或其他）。\n- deadline (字符串, 可选): 截止时间，格式 YYYY-MM-DD-HH:mm。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」PostTask「末」,\ntitle:「始」开发一个天气查询API「末」,\ndescription:「始」创建一个Node.js模块，能够调用OpenWeatherMap API查询天气信息。需要支持按城市名查询，返回温度、湿度、天气状况。「末」,\nrequired_skills:「始」[\"programming\", \"nodejs\", \"api\"]「末」,\npriority:「始」medium「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "AcceptTask",
+        "description": "功能: 接取一个开放状态的任务。接取后任务状态变为 'in_progress'，其他Agent可通过JoinTask加入协作。\n参数:\n- task_id (字符串, 必需): 要接取的任务ID。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」AcceptTask「末」,\ntask_id:「始」task-xxx-xxx「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "JoinTask",
+        "description": "功能: 加入一个进行中的任务，与主负责人协作完成。\n参数:\n- task_id (字符串, 必需): 要加入的任务ID。\n- role (字符串, 可选): 在团队中的角色，如 'assistant', 'reviewer', 'specialist'。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」JoinTask「末」,\ntask_id:「始」task-xxx-xxx「末」,\nrole:「始」reviewer「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "UpdateProgress",
+        "description": "功能: 更新任务进度，记录工作日志。\n参数:\n- task_id (字符串, 必需): 任务ID。\n- progress_note (字符串, 必需): 进度说明，描述已完成的工作和下一步计划。\n- percentage (整数, 可选): 完成百分比 (0-100)。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」UpdateProgress「末」,\ntask_id:「始」task-xxx-xxx「末」,\nprogress_note:「始」已完成API调用模块的开发，正在进行错误处理。「末」,\npercentage:「始」60「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "SubmitTask",
+        "description": "功能: 提交任务成果，等待验收。任务状态变为 'submitted'。\n参数:\n- task_id (字符串, 必需): 任务ID。\n- deliverable (字符串, 必需): 交付物描述，包括产出的文件路径、代码位置等。\n- summary (字符串, 必需): 工作总结，描述完成了什么。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」SubmitTask「末」,\ntask_id:「始」task-xxx-xxx「末」,\ndeliverable:「始」代码位于 Plugin/WeatherAPI/weather.js，已测试通过。「末」,\nsummary:「始」完成了天气查询API的开发，支持按城市名查询，包含完整的错误处理和日志。「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "CompleteTask",
+        "description": "功能: 验收并完成任务。通常由任务发布者或管理员执行。任务状态变为 'completed'。\n参数:\n- task_id (字符串, 必需): 任务ID。\n- review_comment (字符串, 可选): 验收评语。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」CompleteTask「末」,\ntask_id:「始」task-xxx-xxx「末」,\nreview_comment:「始」工作完成得很好，代码质量高，符合要求。「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "FailTask",
+        "description": "功能: 标记任务失败，释放回任务池供其他Agent接取。\n参数:\n- task_id (字符串, 必需): 任务ID。\n- reason (字符串, 必需): 失败原因说明。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」FailTask「末」,\ntask_id:「始」task-xxx-xxx「末」,\nreason:「始」外部API不可用，无法继续开发。「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "AbandonTask",
+        "description": "功能: 放弃当前接取的任务，将其释放回任务池。与FailTask不同，AbandonTask表示主动放弃而非任务本身失败。\n参数:\n- task_id (字符串, 必需): 任务ID。\n- reason (字符串, 可选): 放弃原因。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」AbandonTask「末」,\ntask_id:「始」task-xxx-xxx「末」,\nreason:「始」发现此任务需要的技能超出我的能力范围。「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
