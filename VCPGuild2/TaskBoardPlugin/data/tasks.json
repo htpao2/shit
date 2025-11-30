@@ -1,0 +1,31 @@
+{
+  "task-1764060783829-319c9e66": {
+    "id": "task-1764060783829-319c9e66",
+    "title": "????",
+    "description": "??????????",
+    "required_skills": [
+      "programming",
+      "testing"
+    ],
+    "priority": "medium",
+    "reward": null,
+    "deadline": null,
+    "status": "open",
+    "posted_by": "??Agent",
+    "created_at": "2025-11-25T08:53:03.838Z",
+    "assignee": null,
+    "accepted_at": null,
+    "team": [],
+    "progress": 0,
+    "deliverable": null,
+    "summary": null,
+    "history": [
+      {
+        "action": "created",
+        "timestamp": "2025-11-25T08:53:03.838Z",
+        "by": "??Agent",
+        "note": "任务已创建并发布到任务板"
+      }
+    ]
+  }
+}

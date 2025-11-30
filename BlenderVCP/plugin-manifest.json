@@ -1,0 +1,138 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "BlenderVCP",
+  "version": "1.0.0",
+  "displayName": "Blender VCP 控制器",
+  "description": "通过 VCP 协议连接 Blender，允许 AI 直接交互和控制 Blender 进行 3D 建模、场景创建和操作。",
+  "author": "VCP Team (based on BlenderMCP by Siddharth Ahuja)",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "python",
+    "command": "python blender_vcp_server.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 180000
+  },
+  "configSchema": {
+    "BLENDER_HOST": {
+      "type": "string",
+      "description": "Blender 插件 Socket 服务器的主机地址",
+      "default": "localhost"
+    },
+    "BLENDER_PORT": {
+      "type": "integer",
+      "description": "Blender 插件 Socket 服务器的端口号",
+      "default": 9876
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "GetSceneInfo",
+        "description": "获取当前 Blender 场景的详细信息，包括场景名称、对象数量、对象列表（名称、类型、位置）和材质数量。\n参数:\n- 无需参数\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetSceneInfo「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetSceneInfo「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GetObjectInfo",
+        "description": "获取 Blender 场景中特定对象的详细信息，包括位置、旋转、缩放、可见性、材质和网格数据。\n参数:\n- object_name (字符串, 必需): 要查询的对象名称\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetObjectInfo「末」,\nobject_name:「始」Cube「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetObjectInfo「末」,\nobject_name:「始」Cube「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GetViewportScreenshot",
+        "description": "截取当前 Blender 3D 视口的屏幕截图并返回 Base64 编码的图像。\n参数:\n- max_size (整数, 可选): 最大尺寸像素，默认 800\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetViewportScreenshot「末」,\nmax_size:「始」800「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetViewportScreenshot「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "ExecuteBlenderCode",
+        "description": "在 Blender 中执行任意 Python 代码。可用于创建、修改、删除 3D 对象，应用材质和颜色等。请分步执行，将复杂操作拆分成小块。\n参数:\n- code (字符串, 必需): 要执行的 Python 代码\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」ExecuteBlenderCode「末」,\ncode:「始」import bpy\nbpy.ops.mesh.primitive_cube_add(location=(0, 0, 0))「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」ExecuteBlenderCode「末」,\ncode:「始」import bpy\nbpy.ops.mesh.primitive_cube_add(location=(0, 0, 0))「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GetPolyhavenStatus",
+        "description": "检查 Blender 中是否启用了 PolyHaven 集成。\n参数:\n- 无需参数\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetPolyhavenStatus「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetPolyhavenStatus「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GetPolyhavenCategories",
+        "description": "获取 Polyhaven 上特定资产类型的类别列表。\n参数:\n- asset_type (字符串, 必需): 资产类型 (hdris, textures, models, all)\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetPolyhavenCategories「末」,\nasset_type:「始」hdris「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetPolyhavenCategories「末」,\nasset_type:「始」textures「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "SearchPolyhavenAssets",
+        "description": "在 Polyhaven 上搜索资产，可选过滤。\n参数:\n- asset_type (字符串, 可选): 资产类型 (hdris, textures, models, all)，默认 all\n- categories (字符串, 可选): 用逗号分隔的类别列表\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」SearchPolyhavenAssets「末」,\nasset_type:「始」textures「末」,\ncategories:「始」wood,floor「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」SearchPolyhavenAssets「末」,\nasset_type:「始」models「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "DownloadPolyhavenAsset",
+        "description": "下载并导入 Polyhaven 资产到 Blender。\n参数:\n- asset_id (字符串, 必需): 资产 ID\n- asset_type (字符串, 必需): 资产类型 (hdris, textures, models)\n- resolution (字符串, 可选): 分辨率 (如 1k, 2k, 4k)，默认 1k\n- file_format (字符串, 可选): 文件格式 (如 hdr, exr, jpg, png, gltf, fbx)\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」DownloadPolyhavenAsset「末」,\nasset_id:「始」kloofendal_48d_partly_cloudy_puresky「末」,\nasset_type:「始」hdris「末」,\nresolution:「始」2k「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」DownloadPolyhavenAsset「末」,\nasset_id:「始」rocks_ground_01「末」,\nasset_type:「始」textures「末」,\nresolution:「始」1k「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "SetTexture",
+        "description": "将之前下载的 Polyhaven 纹理应用到对象。\n参数:\n- object_name (字符串, 必需): 要应用纹理的对象名称\n- texture_id (字符串, 必需): Polyhaven 纹理 ID (必须先下载)\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」SetTexture「末」,\nobject_name:「始」Cube「末」,\ntexture_id:「始」rocks_ground_01「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」SetTexture「末」,\nobject_name:「始」Plane「末」,\ntexture_id:「始」wood_floor_01「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GetSketchfabStatus",
+        "description": "检查 Blender 中是否启用了 Sketchfab 集成。\n参数:\n- 无需参数\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetSketchfabStatus「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetSketchfabStatus「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "SearchSketchfabModels",
+        "description": "在 Sketchfab 上搜索模型。\n参数:\n- query (字符串, 必需): 搜索关键词\n- categories (字符串, 可选): 用逗号分隔的类别列表\n- count (整数, 可选): 最大结果数，默认 20\n- downloadable (布尔值, 可选): 是否只包含可下载模型，默认 true\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」SearchSketchfabModels「末」,\nquery:「始」car「末」,\ncount:「始」10「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」SearchSketchfabModels「末」,\nquery:「始」tree「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "DownloadSketchfabModel",
+        "description": "通过 UID 下载并导入 Sketchfab 模型。\n参数:\n- uid (字符串, 必需): Sketchfab 模型的唯一标识符\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」DownloadSketchfabModel「末」,\nuid:「始」abc123def456「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」DownloadSketchfabModel「末」,\nuid:「始」abc123def456「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GetHyper3dStatus",
+        "description": "检查 Blender 中是否启用了 Hyper3D Rodin 集成。\n参数:\n- 无需参数\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetHyper3dStatus「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetHyper3dStatus「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GenerateHyper3dModelViaText",
+        "description": "使用 Hyper3D Rodin 通过文本描述生成 3D 资产。\n参数:\n- text_prompt (字符串, 必需): 所需模型的英文简短描述\n- bbox_condition (数组, 可选): 长度为 3 的浮点数列表，控制 [长, 宽, 高] 的比例\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GenerateHyper3dModelViaText「末」,\ntext_prompt:「始」a wooden chair「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GenerateHyper3dModelViaText「末」,\ntext_prompt:「始」a red sports car「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GenerateHyper3dModelViaImages",
+        "description": "使用 Hyper3D Rodin 通过图像生成 3D 资产。\n参数:\n- input_image_paths (数组, 条件必需): 输入图像的绝对路径列表 (MAIN_SITE 模式)\n- input_image_urls (数组, 条件必需): 输入图像的 URL 列表 (FAL_AI 模式)\n- bbox_condition (数组, 可选): 长度为 3 的整数列表，控制 [长, 宽, 高] 的比例\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GenerateHyper3dModelViaImages「末」,\ninput_image_paths:「始」[\"C:/images/chair.png\"]「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GenerateHyper3dModelViaImages「末」,\ninput_image_urls:「始」[\"https://example.com/image.png\"]「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "PollRodinJobStatus",
+        "description": "检查 Hyper3D Rodin 生成任务是否完成。\n参数:\n- subscription_key (字符串, 条件必需): 生成模型步骤中给出的 subscription_key (MAIN_SITE 模式)\n- request_id (字符串, 条件必需): 生成模型步骤中给出的 request_id (FAL_AI 模式)\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」PollRodinJobStatus「末」,\nsubscription_key:「始」xxx-xxx-xxx「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」PollRodinJobStatus「末」,\nrequest_id:「始」abc123「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "ImportGeneratedAsset",
+        "description": "在生成任务完成后导入 Hyper3D Rodin 生成的资产。\n参数:\n- name (字符串, 必需): 场景中对象的名称\n- task_uuid (字符串, 条件必需): 生成模型步骤中给出的 task_uuid (MAIN_SITE 模式)\n- request_id (字符串, 条件必需): 生成模型步骤中给出的 request_id (FAL_AI 模式)\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」ImportGeneratedAsset「末」,\nname:「始」MyChair「末」,\ntask_uuid:「始」xxx-xxx-xxx「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」ImportGeneratedAsset「末」,\nname:「始」GeneratedCar「末」,\nrequest_id:「始」abc123「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GetHunyuan3dStatus",
+        "description": "检查 Blender 中是否启用了 Hunyuan3D 集成。\n参数:\n- 无需参数\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetHunyuan3dStatus「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GetHunyuan3dStatus「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GenerateHunyuan3dModel",
+        "description": "使用 Hunyuan3D 通过文本描述或图像参考生成 3D 资产。\n参数:\n- text_prompt (字符串, 可选): 所需模型的英文/中文简短描述\n- input_image_url (字符串, 可选): 输入图像的本地或远程 URL\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GenerateHunyuan3dModel「末」,\ntext_prompt:「始」一把木椅「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」GenerateHunyuan3dModel「末」,\ninput_image_url:「始」https://example.com/chair.png「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "PollHunyuanJobStatus",
+        "description": "检查 Hunyuan3D 生成任务是否完成。\n参数:\n- job_id (字符串, 必需): 生成模型步骤中给出的 job_id\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」PollHunyuanJobStatus「末」,\njob_id:「始」job_xxx「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」PollHunyuanJobStatus「末」,\njob_id:「始」job_123456「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "ImportGeneratedAssetHunyuan",
+        "description": "在生成任务完成后导入 Hunyuan3D 生成的资产。\n参数:\n- name (字符串, 必需): 场景中对象的名称\n- zip_file_url (字符串, 必需): 生成模型步骤中给出的 ZIP 文件 URL\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」ImportGeneratedAssetHunyuan「末」,\nname:「始」MyModel「末」,\nzip_file_url:「始」https://example.com/model.zip「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」BlenderVCP「末」,\ncommand:「始」ImportGeneratedAssetHunyuan「末」,\nname:「始」HunyuanChair「末」,\nzip_file_url:「始」https://cos.example.com/model.zip「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
