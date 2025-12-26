@@ -1,0 +1,39 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "ReviewMiner",
+  "version": "1.0.0",
+  "displayName": "App 差评挖掘器",
+  "description": "抓取 App Store 和 Google Play 的低分评论，帮助发现竞品痛点和市场机会。",
+  "author": "VCP Developer",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node review_miner.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 90000
+  },
+  "configSchema": {},
+  "capabilities": {
+    "autoRAG": {
+      "enabled": true,
+      "threshold": 3000,
+      "ttlMinutes": 60
+    },
+    "invocationCommands": [
+      {
+        "commandIdentifier": "fetch_ios_reviews",
+        "description": "获取 iOS App Store 中指定应用的低分评论 (1-3星)。\n参数:\n- appId (字符串, 必需): App 的 ID，可以是数字 ID (如 '333903271') 或应用名称 (如 'twitter')。\n- country (字符串, 可选): 国家/地区代码，如 'us', 'cn', 'jp'，默认 'us'。\n- maxRating (整数, 可选): 最高评分，1-3，默认 3。\n- limit (整数, 可选): 获取评论数量，默认 50。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ReviewMiner「末」,\ncommand:「始」fetch_ios_reviews「末」,\nappId:「始」333903271「末」,\ncountry:「始」us「末」,\nlimit:「始」50「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "fetch_android_reviews",
+        "description": "获取 Google Play 中指定应用的低分评论。\n参数:\n- appId (字符串, 必需): App 的包名 (如 'com.twitter.android')。\n- lang (字符串, 可选): 语言代码，如 'en', 'zh'，默认 'en'。\n- country (字符串, 可选): 国家代码，如 'us'，默认 'us'。\n- maxRating (整数, 可选): 最高评分，1-3，默认 3。\n- limit (整数, 可选): 获取评论数量，默认 50。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ReviewMiner「末」,\ncommand:「始」fetch_android_reviews「末」,\nappId:「始」com.twitter.android「末」,\nlimit:「始」50「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "search_app",
+        "description": "搜索应用以获取其 ID。\n参数:\n- term (字符串, 必需): 搜索词。\n- platform (字符串, 可选): 平台，'ios' 或 'android'，默认 'ios'。\n- country (字符串, 可选): 国家代码，默认 'us'。\n- limit (整数, 可选): 结果数量，默认 5。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ReviewMiner「末」,\ncommand:「始」search_app「末」,\nterm:「始」note taking app「末」,\nplatform:「始」ios「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

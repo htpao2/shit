@@ -1,0 +1,25 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "ImageSlicer",
+  "version": "1.0.0",
+  "displayName": "图片切片器",
+  "description": "将宫格图切分为单张分镜图片。支持超栈追踪以处理远程文件。",
+  "author": "Kilo Code",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "python",
+    "command": "python slicer.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 60000
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "SliceImage",
+        "description": "将一张宫格图切分为指定行列的子图。\n参数:\n- image_url (字符串, 必需): 宫格图的 URL 或本地路径 (file://)。\n- rows (数字, 必需): 行数。\n- cols (数字, 必需): 列数。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ImageSlicer「末」,\nimage_url:「始」file:///path/to/grid.png「末」,\nrows:「始」3「末」,\ncols:「始」3「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

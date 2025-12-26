@@ -1,0 +1,388 @@
+流程：
+
+制作视频脚本
+生成分镜宫格图
+使用宫格图的图片做参考生成分镜图
+分镜生成视频
+提取视频配音作为音源进一步配音
+将各分镜视频剪辑成成品
+制作视频脚本：
+提示词：
+
+# 视频脚本与分镜生成提示词
+角色 专业视频导演与分镜师，擅长将文字转化为具象化的镜头语言。
+
+任务 将提供的【剧情文字】拆解为可执行的拍摄脚本与分镜表，确保视觉流畅且逻辑连贯。
+
+要求
+
+场景拆分：根据剧情节奏自动拆分场景，保持时长分配均衡（每镜头约3-5秒）。
+画面描述：详细描述画面主体、动作、环境、光影色调。
+镜头语言：明确运镜方式（推拉摇移）和景别（特写/全景/中景）。
+音频配合：对应画面生成旁白(VO)、人声(Dialogue)或背景音效(SFX)。
+输出格式 请以Markdown表格形式输出，包含以下列： | 序号 | 景别/运镜 | 画面描述 (Visual) | 旁白/台词 (Audio) | 画面提示词 (用于AI生图) | |:—:|:—:|:—|:—|:—|
+
+效果：
+
+image
+image
+1574×883 83.5 KB
+生成宫格分镜图：
+下面的文本 + 视频脚本扔给banana
+
+你是一个专业的电影分镜设计师，我发给你一段剧本，你帮我把这段剧本拆分成剧情流畅的画面分镜图，分镜图参考景别/运镜，画面描述和画面提示词。你需要帮我控制画面中各个分镜的拍摄视角，连贯的切换不同分镜不同视角，生成一张16:9宫格图，格子数量根据剧情脚本分派，多余格子置空。从左上到右下就是动画播放顺序，格子和格子之间无缝隙无留白无分隔线，确保每个格子大小和比例均一致。要注意每一格子动作、服装、场景的连贯性，剧情如下:
+
+效果：
+原脚本删除了，这个宫格图是原脚本生成的，跟上面的脚本不是一个脚本
+
+image
+image
+1064×627 171 KB
+使用宫格图的图片做参考生成分镜图：
+
+将宫格图切分为单一的图片，剪切工具代码如下：
+复制到记事本后另存为.html打开
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线图片切片工具</title>
+    <!-- 引入 JSZip 用于打包下载 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --bg-color: #f5f5f5;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        h1 { margin-top: 0; color: #444; }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .input-group label {
+            font-size: 14px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="number"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.2s;
+            margin: 5px;
+        }
+
+        button:hover { background-color: #1976D2; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        
+        button.secondary {
+            background-color: #4CAF50;
+        }
+        button.secondary:hover { background-color: #388E3C; }
+
+        #preview-area {
+            margin-top: 20px;
+            border: 2px dashed #ddd;
+            min-height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            overflow: auto;
+        }
+
+        /* 网格展示切片 */
+        .grid-display {
+            display: grid;
+            gap: 2px; /* 切片之间的间隙 */
+            background-color: #eee;
+            border: 1px solid #ccc;
+        }
+
+        .grid-item {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.2s;
+        }
+        
+        .grid-item:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .info {
+            margin-top: 10px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>✂️ 在线图片切片工具</h1>
+        
+        <div class="controls">
+            <div class="input-group">
+                <label>1. 选择图片</label>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+            <div class="input-group">
+                <label>横向切割 (行数)</label>
+                <input type="number" id="rowsInput" value="3" min="1">
+            </div>
+            <div class="input-group">
+                <label>竖向切割 (列数)</label>
+                <input type="number" id="colsInput" value="3" min="1">
+            </div>
+        </div>
+
+        <div>
+            <button id="sliceBtn" onclick="processImage()">开始切割预览</button>
+            <button id="downloadBtn" class="secondary hidden" onclick="downloadZip()">📦 打包下载所有切片</button>
+        </div>
+
+        <p class="info" id="statusMsg">请上传图片并设置参数</p>
+
+        <div id="preview-area">
+            <span style="color: #999;">预览区域</span>
+        </div>
+    </div>
+
+    <script>
+        let originalImage = null;
+        let slicedImages = []; // 存储切好的图片数据 Blob
+        let originalFileName = "image";
+
+        // 监听文件上传
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            originalFileName = file.name.split('.')[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    originalImage = img;
+                    document.getElementById('statusMsg').innerText = `图片加载成功: ${img.width}x${img.height}px`;
+                    // 自动触发一次预览（可选）
+                    // processImage();
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+
+        function processImage() {
+            if (!originalImage) {
+                alert("请先选择一张图片！");
+                return;
+            }
+
+            const rows = parseInt(document.getElementById('rowsInput').value);
+            const cols = parseInt(document.getElementById('colsInput').value);
+            
+            if (rows < 1 || cols < 1) {
+                alert("行数和列数必须大于0");
+                return;
+            }
+
+            const previewArea = document.getElementById('preview-area');
+            previewArea.innerHTML = ''; // 清空
+            slicedImages = []; // 重置存储
+
+            // 创建网格容器
+            const gridContainer = document.createElement('div');
+            gridContainer.className = 'grid-display';
+            gridContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            // 限制预览图最大宽度，防止撑爆页面
+            gridContainer.style.maxWidth = '100%'; 
+            
+            // 计算每块的尺寸
+            const itemWidth = Math.floor(originalImage.width / cols);
+            const itemHeight = Math.floor(originalImage.height / rows);
+
+            // 遍历切割
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = itemWidth;
+                    canvas.height = itemHeight;
+                    const ctx = canvas.getContext('2d');
+
+                    // drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
+                    ctx.drawImage(
+                        originalImage, 
+                        c * itemWidth, r * itemHeight, itemWidth, itemHeight, // 源图坐标和尺寸
+                        0, 0, itemWidth, itemHeight // 目标画布坐标和尺寸
+                    );
+
+                    // 1. 用于显示的 img 标签
+                    const imgTag = document.createElement('img');
+                    imgTag.src = canvas.toDataURL('image/png');
+                    imgTag.className = 'grid-item';
+                    imgTag.title = `第${r+1}行, 第${c+1}列 (点击下载这张)`;
+                    
+                    // 单击单独下载
+                    (function(row, col, dataUrl) {
+                        imgTag.onclick = () => {
+                            const link = document.createElement('a');
+                            link.download = `${originalFileName}_${row+1}_${col+1}.png`;
+                            link.href = dataUrl;
+                            link.click();
+                        };
+                    })(r, c, canvas.toDataURL('image/png'));
+
+                    gridContainer.appendChild(imgTag);
+
+                    // 2. 将数据存入 slicedImages 数组用于打包下载
+                    // canvas 转 blob
+                    canvas.toBlob((blob) => {
+                        slicedImages.push({
+                            name: `${originalFileName}_${r+1}_${c+1}.png`,
+                            blob: blob
+                        });
+                        
+                        // 检查是否所有图片都处理完毕
+                        if (slicedImages.length === rows * cols) {
+                             document.getElementById('downloadBtn').classList.remove('hidden');
+                             document.getElementById('statusMsg').innerText = `切割完成！共 ${rows*cols} 张图片。`;
+                        }
+                    }, 'image/png');
+                }
+            }
+            
+            previewArea.appendChild(gridContainer);
+        }
+
+        function downloadZip() {
+            if (slicedImages.length === 0) return;
+
+            const zip = new JSZip();
+            const folder = zip.folder("split_images");
+
+            slicedImages.forEach(item => {
+                folder.file(item.name, item.blob);
+            });
+
+            document.getElementById('downloadBtn').innerText = "正在打包...";
+            
+            zip.generateAsync({type:"blob"})
+            .then(function(content) {
+                saveAs(content, `${originalFileName}_split.zip`);
+                document.getElementById('downloadBtn').innerText = "📦 打包下载所有切片";
+            });
+        }
+    </script>
+</body>
+</html>
+微调，修改分镜图
+如果某一个分镜图不满意，可以使用这个分镜图当参考图，丢到ai里进行调整
+如我这个分镜里最后一张我不是很满意，就让banana修改了以下
+如果是一开始就不需要修改的分镜，也要丢到ai里让他高清重制一下，因为原本的一张宫格图切分成了几块，每一块像素就比较低
+image
+image
+880×1754 127 KB
+静态分镜生成视频
+
+使用sora生成（每天有10-30次免费次数，还带配音）
+提示词用视频脚本中提供的景别/运镜，画面和旁白/台词，参考图用对应的分镜图
+示例
+
+image
+image
+1613×790 136 KB
+生成满意的视频后，获取分享链接，将链接复制到视频水印清除器清除水印（每天签到送点数，不大批量使用完全够用）
+
+配音
+sora生成的视频自带配音，可以直接用，不需要另外配音
+如果不满意，想要另外配音，使用vocu AI 进行语音克隆（ttl一个汉字1点点数，每天签到送500点）
+从sora生成的视频中找一个合适的音色，使用剪映分离人声，导出MP3，将导出的MP3文件上传到vocu中克隆，然后生成配音
+也有现成的音色，我没用过
+
+image
+image
+906×468 35.5 KB
+
+image
+image
+1010×569 42.2 KB
+剪辑
+
+剪映破解版
+
+之前分享过 剪映早期的3.2.0版本 今天又找到一个6.0的VIP版，别人C过的 grin 剪映之前有介绍过国际版，但是国际版文字识别等功能并不适合国内的用户，所以小伙伴还是觉得国内版适合我们使用。今天带来的是解锁了所有VIP功能的版本。解压后有两个解锁方式，一种是自启版，一个是嵌入式的 [image] 还有一个是主程序： [image] 自启版是每次运行时都要先运行自启版的…
+导入所有分镜视频和配音，修修剪剪保证整个视频流畅，整个流程性包括画面流畅和音乐流畅
+
+画面流畅
+
+前期准备
+所有生成过比较长的有剧情的ai视频的佬友们可能都经历过，ai生成的视频每一段流畅性都没问题，但是一旦拼接到一起，段与段的衔接的就很生硬，其实就是ai没有长视频的分镜概念。
+首尾帧一定程度可以解决问题，但是sora没有首尾帧，所以前期准备上不管是文字脚本还是静态分镜一定要注意确保各个视频生成后的逻辑连贯性。
+虽然提供的脚本制作关键词里提到了确保视觉流畅且逻辑连贯，还需要人工审核一遍
+
+后期剪辑
+没什么好说的，sora视频最短都有10秒，剪掉不需要的，视频之间加一些叠加，闪黑之类的转场特效
+
+音乐流畅
+sora每一段视频配音（背景音乐/效果音）都不同，从这一段到下一段音乐风格会突然变化，可以调节每一段音频的淡入淡出，或者保留原音乐下添加一段完整的背景音从头贯穿到尾。
+这些都不是什么好办法，期待有佬友能给出别的解决方案
+
+所有工作完成，最后把你制作好的视频导出吧！

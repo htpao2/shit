@@ -1,0 +1,41 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "StoryboardGen",
+  "version": "1.0.0",
+  "displayName": "分镜绘图师",
+  "description": "根据分镜脚本生成 16:9 的宫格分镜图。这是一个异步插件，会返回一个占位符。",
+  "author": "Kilo Code",
+  "pluginType": "asynchronous",
+  "entryPoint": {
+    "type": "python",
+    "command": "python storyboard_gen.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 300000
+  },
+  "configSchema": {
+    "DRAW_API_KEY": {
+      "type": "string",
+      "description": "绘图 API Key (如 Banana/Flux)"
+    },
+    "DRAW_API_URL": {
+      "type": "string",
+      "description": "绘图 API URL"
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "GenerateStoryboard",
+        "description": "提交一个新的分镜宫格图生成任务。\n参数:\n- script_data (对象/数组, 必需): 由 ScriptDirector 生成的分镜脚本数据。\n- style_prompt (字符串, 可选): 画面风格描述（如：写实、动漫、赛博朋克）。\n调用成功后，你会收到一个动态上下文占位符，请在你的回复中包含以下占位符原文：{{{{VCP_ASYNC_RESULT::StoryboardGen::{req_id_submit}}}}}"
+      }
+    ]
+  },
+  "webSocketPush": {
+    "enabled": true,
+    "messageType": "storyboard_generation_status",
+    "usePluginResultAsMessage": true,
+    "targetClientType": "VCPLog"
+  }
+}

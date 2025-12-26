@@ -1,0 +1,25 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "VideoEditor",
+  "version": "1.0.0",
+  "displayName": "后期剪辑师",
+  "description": "将多个视频片段与音频轨道拼接合成最终视频。这是一个异步插件。",
+  "author": "Kilo Code",
+  "pluginType": "asynchronous",
+  "entryPoint": {
+    "type": "python",
+    "command": "python video_editor.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 1200000
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "ComposeFinalVideo",
+        "description": "提交一个视频合成任务。\n参数:\n- video_clips (数组, 必需): 视频片段 URL 或路径列表。\n- audio_tracks (数组, 必需): 音频轨道 URL 或路径列表。\n- output_name (字符串, 可选): 输出文件名。\n调用成功后，你会收到一个动态上下文占位符，请在你的回复中包含以下占位符原文：{{{{VCP_ASYNC_RESULT::VideoEditor::{req_id_submit}}}}}"
+      }
+    ]
+  }
+}

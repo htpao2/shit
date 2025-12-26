@@ -1,0 +1,15 @@
+{
+  "name": "ad-spy",
+  "version": "1.0.0",
+  "description": "VCP Plugin - Google Ads Transparency Center scraper",
+  "main": "ad_spy.js",
+  "scripts": {
+    "start": "node ad_spy.js"
+  },
+  "dependencies": {
+    "puppeteer": "^21.6.1"
+  },
+  "keywords": ["vcp", "plugin", "google-ads", "advertising", "competitive-intelligence"],
+  "author": "VCP Developer",
+  "license": "MIT"
+}

@@ -1,0 +1,44 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "KOLHunter",
+  "version": "1.0.0",
+  "displayName": "KOL/客户搜寻器",
+  "description": "利用 Google 高级搜索指令在社交平台上搜寻特定领域的 KOL 和潜在客户联系方式。",
+  "author": "VCP Developer",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "python",
+    "command": "python kol_hunter.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 90000
+  },
+  "configSchema": {
+    "SERP_API_KEY": {
+      "type": "string",
+      "description": "SerpAPI Key (可选，用于更稳定的搜索结果)"
+    },
+    "PROXY_URL": {
+      "type": "string",
+      "description": "代理服务器URL (可选)"
+    }
+  },
+  "capabilities": {
+    "autoRAG": {
+      "enabled": true,
+      "threshold": 3000,
+      "ttlMinutes": 60
+    },
+    "invocationCommands": [
+      {
+        "commandIdentifier": "find_contacts",
+        "description": "在指定社交平台上搜索特定领域的 KOL 和潜在客户。\n参数:\n- keyword (字符串, 必需): 行业/领域关键词，如 'clay art', 'AI automation'。\n- platform (字符串, 可选): 目标平台，可选 'instagram', 'twitter', 'linkedin', 'youtube', 'tiktok'，默认 'instagram'。\n- include_email (布尔, 可选): 是否尝试提取邮箱，默认 true。\n- limit (整数, 可选): 搜索结果数量，默认 20。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」KOLHunter「末」,\ncommand:「始」find_contacts「末」,\nkeyword:「始」clay animation「末」,\nplatform:「始」instagram「末」,\nlimit:「始」20「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "build_search_query",
+        "description": "生成高级搜索指令，用于手动在 Google 中搜索。\n参数:\n- keyword (字符串, 必需): 行业关键词。\n- platform (字符串, 可选): 目标平台，默认 'instagram'。\n- extra_terms (字符串, 可选): 额外搜索词，逗号分隔。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」KOLHunter「末」,\ncommand:「始」build_search_query「末」,\nkeyword:「始」3D printing「末」,\nplatform:「始」youtube「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

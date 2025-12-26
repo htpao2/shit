@@ -1,0 +1,49 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "CommunityPulse",
+  "version": "1.0.0",
+  "displayName": "社群情报脉搏",
+  "description": "自动化抓取 Hacker News 和 Reddit 的热门内容，用于发现趋势和痛点。",
+  "author": "VCP Developer",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "python",
+    "command": "python community_pulse.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 60000
+  },
+  "configSchema": {
+    "REDDIT_CLIENT_ID": {
+      "type": "string",
+      "description": "Reddit API Client ID"
+    },
+    "REDDIT_CLIENT_SECRET": {
+      "type": "string",
+      "description": "Reddit API Client Secret"
+    },
+    "REDDIT_USER_AGENT": {
+      "type": "string",
+      "description": "Reddit API User Agent",
+      "default": "VCP_CommunityPulse/1.0"
+    }
+  },
+  "capabilities": {
+    "autoRAG": {
+      "enabled": true,
+      "threshold": 3000,
+      "ttlMinutes": 60
+    },
+    "invocationCommands": [
+      {
+        "commandIdentifier": "fetch_hn_top",
+        "description": "获取 Hacker News 首页的热门帖子及评论。\n参数:\n- limit (整数, 可选): 获取的帖子数量，默认为 5。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」CommunityPulse「末」,\ncommand:「始」fetch_hn_top「末」,\nlimit:「始」5「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "fetch_subreddit_hot",
+        "description": "获取指定 Subreddit 的热门帖子及评论。\n参数:\n- subreddit (字符串, 必需): 版块名称，如 'ArtificialInteligence'。\n- limit (整数, 可选): 获取的帖子数量，默认为 5。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」CommunityPulse「末」,\ncommand:「始」fetch_subreddit_hot「末」,\nsubreddit:「始」ArtificialInteligence「末」,\nlimit:「始」5「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

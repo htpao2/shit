@@ -1,0 +1,37 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "DemandRadar",
+  "version": "1.0.0",
+  "displayName": "需求雷达",
+  "description": "在 Reddit 等平台利用关键词组合捕捉具有明确需求意向的帖子，发现潜在客户和产品机会。",
+  "author": "VCP Developer",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "python",
+    "command": "python demand_radar.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 60000
+  },
+  "configSchema": {
+    "REDDIT_USER_AGENT": {
+      "type": "string",
+      "description": "Reddit API User Agent",
+      "default": "VCP_DemandRadar/1.0"
+    }
+  },
+  "capabilities": {
+    "autoRAG": {
+      "enabled": true,
+      "threshold": 3000,
+      "ttlMinutes": 60
+    },
+    "invocationCommands": [
+      {
+        "commandIdentifier": "scan_opportunities",
+        "description": "扫描 Reddit 寻找具有明确需求意向的帖子。\n参数:\n- keywords (字符串, 必需): 搜索关键词，如 'AI tool', 'looking for automation'。\n- subreddits (字符串, 可选): 要搜索的版块列表，逗号分隔，如 'ArtificialInteligence,SaaS'。不填则搜索全站。\n- intent_patterns (字符串, 可选): 意向模式列表，逗号分隔，如 'looking for,is there a way,need help with'。\n- limit (整数, 可选): 返回结果数量，默认 10。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」DemandRadar「末」,\ncommand:「始」scan_opportunities「末」,\nkeywords:「始」AI writing tool「末」,\nsubreddits:「始」ArtificialInteligence,SaaS「末」,\nlimit:「始」10「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

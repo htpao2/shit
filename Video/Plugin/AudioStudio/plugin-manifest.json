@@ -1,0 +1,25 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "AudioStudio",
+  "version": "1.0.0",
+  "displayName": "音频工作室",
+  "description": "生成配音 (TTS) 或进行声音克隆。这是一个异步插件。",
+  "author": "Kilo Code",
+  "pluginType": "asynchronous",
+  "entryPoint": {
+    "type": "python",
+    "command": "python audio_studio.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 300000
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "GenerateAudio",
+        "description": "提交一个音频生成任务。\n参数:\n- text (字符串, 必需): 需要转换成语音的文字。\n- voice_id (字符串, 可选): 音色 ID。\n- reference_audio (字符串, 可选): 用于克隆的声音参考文件 URL 或路径。\n调用成功后，你会收到一个动态上下文占位符，请在你的回复中包含以下占位符原文：{{{{VCP_ASYNC_RESULT::AudioStudio::{req_id_submit}}}}}"
+      }
+    ]
+  }
+}

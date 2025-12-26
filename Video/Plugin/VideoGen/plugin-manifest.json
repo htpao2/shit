@@ -1,0 +1,25 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "VideoGen",
+  "version": "1.0.0",
+  "displayName": "视频生成器",
+  "description": "图生视频 (Image-to-Video)。这是一个异步插件。",
+  "author": "Kilo Code",
+  "pluginType": "asynchronous",
+  "entryPoint": {
+    "type": "python",
+    "command": "python video_gen.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 600000
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "GenerateVideo",
+        "description": "提交一个视频生成任务。\n参数:\n- image_url (字符串, 必需): 参考图 URL 或路径。\n- prompt (字符串, 必需): 运镜和动作描述。\n- duration (数字, 可选): 视频时长。\n调用成功后，你会收到一个动态上下文占位符，请在你的回复中包含以下占位符原文：{{{{VCP_ASYNC_RESULT::VideoGen::{req_id_submit}}}}}"
+      }
+    ]
+  }
+}

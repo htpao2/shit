@@ -1,0 +1,39 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "AdSpy",
+  "version": "1.0.0",
+  "displayName": "广告情报收集器",
+  "description": "抓取 Google Ads Transparency Center 的竞品广告信息，分析竞品投放策略。",
+  "author": "VCP Developer",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node ad_spy.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 120000
+  },
+  "configSchema": {
+    "HEADLESS": {
+      "type": "boolean",
+      "description": "是否无头模式运行浏览器",
+      "default": true
+    }
+  },
+  "capabilities": {
+    "autoRAG": {
+      "enabled": false
+    },
+    "invocationCommands": [
+      {
+        "commandIdentifier": "get_competitor_ads",
+        "description": "获取指定域名在 Google Ads Transparency Center 的广告信息。\n参数:\n- domain (字符串, 必需): 竞品域名，如 'notion.so', 'canva.com'。\n- region (字符串, 可选): 投放地区代码，如 'US', 'GB', 'JP'，默认为全部地区。\n- limit (整数, 可选): 获取广告数量，默认 10。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」AdSpy「末」,\ncommand:「始」get_competitor_ads「末」,\ndomain:「始」notion.so「末」,\nregion:「始」US「末」,\nlimit:「始」10「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "get_transparency_url",
+        "description": "生成 Google Ads Transparency Center 的直达链接，用于手动查看。\n参数:\n- domain (字符串, 必需): 竞品域名。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」AdSpy「末」,\ncommand:「始」get_transparency_url「末」,\ndomain:「始」figma.com「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

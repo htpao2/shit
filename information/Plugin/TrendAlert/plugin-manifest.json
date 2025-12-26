@@ -1,0 +1,39 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "TrendAlert",
+  "version": "1.0.0",
+  "displayName": "趋势热点预警",
+  "description": "监控 Google Trends，检测关键词热度变化，当热度爆发时发出预警。",
+  "author": "VCP Developer",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "python",
+    "command": "python trend_alert.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 60000
+  },
+  "configSchema": {
+    "PROXY_URL": {
+      "type": "string",
+      "description": "代理服务器URL (可选，用于访问 Google Trends)",
+      "default": ""
+    }
+  },
+  "capabilities": {
+    "autoRAG": {
+      "enabled": false
+    },
+    "invocationCommands": [
+      {
+        "commandIdentifier": "check_trend_growth",
+        "description": "检查指定关键词在 Google Trends 上的热度变化。\n参数:\n- keywords (字符串, 必需): 要监控的关键词，多个用逗号分隔，如 'AI agent,LLM,GPT'。\n- threshold (整数, 可选): 增长率阈值百分比，超过此值则触发预警，默认 100 (即 100%)。\n- timeframe (字符串, 可选): 时间范围，可选 'now 1-H', 'now 4-H', 'now 1-d', 'now 7-d', 'today 1-m', 'today 3-m'，默认 'now 7-d'。\n- geo (字符串, 可选): 地区代码，如 'US', 'CN', 'GB'，默认为全球。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」TrendAlert「末」,\ncommand:「始」check_trend_growth「末」,\nkeywords:「始」AI agent,autonomous AI「末」,\nthreshold:「始」150「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "get_related_queries",
+        "description": "获取与指定关键词相关的热门查询词和上升查询词。\n参数:\n- keyword (字符串, 必需): 要查询的关键词。\n- geo (字符串, 可选): 地区代码，默认全球。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」TrendAlert「末」,\ncommand:「始」get_related_queries「末」,\nkeyword:「始」generative AI「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

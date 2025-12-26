@@ -1,0 +1,42 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "ScriptDirector",
+  "version": "1.0.0",
+  "displayName": "脚本导演",
+  "description": "将剧情文字拆解为专业的视频拍摄脚本与分镜表。",
+  "author": "Kilo Code",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "python",
+    "command": "python script_director.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 30000
+  },
+  "configSchema": {
+    "LLM_API_KEY": {
+      "type": "string",
+      "description": "用于生成脚本的 LLM API Key"
+    },
+    "LLM_API_BASE": {
+      "type": "string",
+      "description": "LLM API Base URL",
+      "default": "https://api.openai.com/v1"
+    },
+    "LLM_MODEL": {
+      "type": "string",
+      "description": "使用的模型名称",
+      "default": "gpt-4o"
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "GenerateScript",
+        "description": "根据剧情文字生成视频脚本。\n参数:\n- plot_text (字符串, 必需): 剧情文字内容。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ScriptDirector「末」,\nplot_text:「始」在一个赛博朋克的城市里，主角发现了一个惊人的秘密。「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」ScriptDirector「末」,\nplot_text:「始」猫咪在阳光下打盹，突然被一只蝴蝶惊醒。「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
