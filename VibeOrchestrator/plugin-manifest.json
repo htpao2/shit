@@ -1,0 +1,69 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "VibeOrchestrator",
+  "version": "1.0.0",
+  "displayName": "Vibe 编排器",
+  "description": "管理 VibeBuilder 项目的生命周期、任务和状态流转。该工具作为项目的单一事实来源，强制执行流程规则并提供状态回滚功能。",
+  "author": "Kilo Code",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node index.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 10000
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "InitProject",
+        "description": "初始化一个新的 VibeBuilder 项目状态。\n参数:\n- projectName (字符串, 必需): 项目名称。\n- description (字符串, 可选): 项目描述。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VibeOrchestrator「末」,\ncommand:「始」InitProject「末」,\nprojectName:「始」MyProject「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GetState",
+        "description": "获取当前项目的所有状态信息（阶段、任务、阻塞项）。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VibeOrchestrator「末」,\ncommand:「始」GetState「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "CreateTask",
+        "description": "向待办列表中添加一个新任务。\n参数:\n- title (字符串, 必需): 任务标题。\n- description (字符串, 必需): 任务详细描述。\n- assignee (字符串, 必需): 分配的角色 (Archon/Weaver/Observer)。\n- priority (字符串, 可选): 优先级 (high/medium/low)。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VibeOrchestrator「末」,\ncommand:「始」CreateTask「末」,\ntitle:「始」实现登录接口「末」,\ndescription:「始」使用 Node.js 实现 JWT 登录「末」,\nassignee:「始」Weaver「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "StartTask",
+        "description": "将任务从待办移动到进行中。\n参数:\n- taskId (字符串, 必需): 任务 ID。\n- agentName (字符串, 必需): 执行任务的 Agent 名称。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VibeOrchestrator「末」,\ncommand:「始」StartTask「末」,\ntaskId:「始」TASK-1「末」,\nagentName:「始」VibeWeaver-1「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "SubmitTask",
+        "description": "提交已完成的任务进入评审阶段。\n参数:\n- taskId (字符串, 必需): 任务 ID。\n- deliverables (字符串, 必需): 交付物描述或链接。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VibeOrchestrator「末」,\ncommand:「始」SubmitTask「末」,\ntaskId:「始」TASK-1「末」,\ndeliverables:「始」已提交 PR #123「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "ApproveTask",
+        "description": "评审通过任务。\n参数:\n- taskId (字符串, 必需): 任务 ID。\n- feedback (字符串, 可选): 评审反馈。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VibeOrchestrator「末」,\ncommand:「始」ApproveTask「末」,\ntaskId:「始」TASK-1「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "RejectTask",
+        "description": "评审拒绝任务，将其退回进行中。\n参数:\n- taskId (字符串, 必需): 任务 ID。\n- feedback (字符串, 必需): 拒绝原因和修改建议。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VibeOrchestrator「末」,\ncommand:「始」RejectTask「末」,\ntaskId:「始」TASK-1「末」,\nfeedback:「始」代码缺少单元测试「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "TransitionStage",
+        "description": "尝试切换项目阶段。\n参数:\n- targetStage (字符串, 必需): 目标阶段 (Planning/Development/Review/Testing/Done)。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VibeOrchestrator「末」,\ncommand:「始」TransitionStage「末」,\ntargetStage:「始」Review「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "RollbackState",
+        "description": "回滚项目状态到之前的快照。\n参数:\n- steps (数字, 可选): 回滚步数，默认为 1。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VibeOrchestrator「末」,\ncommand:「始」RollbackState「末」,\nsteps:「始」1「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "UpdateSection",
+        "description": "更新日记本中的特定协作区域（Blockers, ReviewFeedback, DecisionLog）。\n参数:\n- section (字符串, 必需): 区域名称 (Blockers/ReviewFeedback/DecisionLog)。\n- content (字符串, 必需): 要写入的内容。\n- mode (字符串, 可选): 写入模式 (append/overwrite)，默认为 append。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VibeOrchestrator「末」,\ncommand:「始」UpdateSection「末」,\nsection:「始」Blockers「末」,\ncontent:「始」数据库连接超时「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "ReadSection",
+        "description": "读取日记本中的特定协作区域内容。\n参数:\n- section (字符串, 必需): 区域名称 (Blockers/ReviewFeedback/DecisionLog)。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VibeOrchestrator「末」,\ncommand:「始」ReadSection「末」,\nsection:「始」ReviewFeedback「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GetContext",
+        "description": "获取当前 Agent 相关的智能上下文。插件会根据你的角色和名称筛选最相关的任务和协作信息。\n参数:\n- agentName (字符串, 必需): 你的 Agent 名称。\n- role (字符串, 必需): 你的角色 (Archon/Weaver/Observer)。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VibeOrchestrator「末」,\ncommand:「始」GetContext「末」,\nagentName:「始」VibeWeaver-1「末」,\nrole:「始」Weaver「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
