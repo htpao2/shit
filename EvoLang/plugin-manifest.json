@@ -1,0 +1,84 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "EvoLang",
+  "version": "1.0.0",
+  "displayName": "自进化语言与协议孵化器",
+  "description": "混合服务插件：常驻内存维护自进化方言词典、加密密钥与演化规则，提供语言游戏、加密解密、方言路由等功能。支持基于 Agent 身份的方言切换和方言签名验证。",
+  "author": "VCP Team",
+  "pluginType": "hybridservice",
+  "entryPoint": {
+    "script": "EvoLang.js"
+  },
+  "communication": {
+    "protocol": "direct",
+    "timeout": 30000
+  },
+  "configSchema": {
+    "CRYPTO_ALGORITHM": {
+      "type": "string",
+      "description": "加密算法",
+      "default": "aes-256-cbc"
+    },
+    "DEFAULT_DIALECT": {
+      "type": "string",
+      "description": "默认方言名称",
+      "default": "default"
+    },
+    "EVOLUTION_FREQUENCY_THRESHOLD": {
+      "type": "number",
+      "description": "词语频率低于此值在演化时被淘汰",
+      "default": 3
+    },
+    "EVOLUTION_MERGE_THRESHOLD": {
+      "type": "number",
+      "description": "两个词语的语义相似度超过此值时触发合并",
+      "default": 0.8
+    },
+    "MAX_DICTIONARY_SIZE": {
+      "type": "number",
+      "description": "词典最大词条数",
+      "default": 10000
+    },
+    "DATA_DIR": {
+      "type": "string",
+      "description": "数据存储目录（相对于插件根目录）",
+      "default": "evolang-data"
+    },
+    "MASTER_KEY": {
+      "type": "string",
+      "description": "主密钥，用于派生各 Agent 的加密密钥（留空则自动生成）",
+      "default": ""
+    }
+  },
+  "capabilities": {
+    "systemPromptPlaceholders": [
+      {
+        "placeholder": "{{VCPEvoLangDialect}}",
+        "description": "当前活跃方言词典摘要。包含核心词汇、语法规则和可用方言列表。此为动态占位符，内容随词典演化自动更新。",
+        "isDynamic": true
+      }
+    ],
+    "invocationCommands": [
+      {
+        "commandIdentifier": "EncryptMessage",
+        "description": "使用特定 Agent 绑定的方言密钥加密一段消息。加密结果附带方言签名，可用于验证发送者身份。\n参数:\n- command (字符串, 必需): 固定值 \"EncryptMessage\"\n- text (字符串, 必需): 需要加密的明文消息\n- agentId (字符串, 必需): 发送方 Agent 的标识符（密钥与身份绑定）\n- dialect (字符串, 可选): 使用的方言名称，默认使用该 Agent 的绑定方言\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」EvoLang「末」,\ncommand:「始」EncryptMessage「末」,\ntext:「始」这是一条秘密消息「末」,\nagentId:「始」AlphaAgent「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "DecryptMessage",
+        "description": "解密一条使用 EvoLang 加密的消息。需要提供正确的 Agent 身份以获取对应密钥，同时验证方言签名。\n参数:\n- command (字符串, 必需): 固定值 \"DecryptMessage\"\n- cipherText (字符串, 必需): 需要解密的密文（包含签名头）\n- agentId (字符串, 必需): 接收方 Agent 的标识符\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」EvoLang「末」,\ncommand:「始」DecryptMessage「末」,\ncipherText:「始」EVOLANG::v1::AlphaAgent::abc123...「末」,\nagentId:「始」BetaAgent「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "LanguageGame",
+        "description": "发起一轮语言创造游戏。根据给定主题和规则，生成新的方言词汇和语法规则，丰富自进化语言体系。\n参数:\n- command (字符串, 必需): 固定值 \"LanguageGame\"\n- theme (字符串, 必需): 游戏主题，如 \"情感表达\"、\"技术术语\"、\"自然现象\"\n- baseDialect (字符串, 可选): 基于哪个方言进行创造，默认 \"default\"\n- wordCount (数字, 可选): 期望生成的新词数量，默认 5\n- rules (字符串, 可选): 额外的创造规则，如 \"只使用两个音节\"、\"必须有韵律\"\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」EvoLang「末」,\ncommand:「始」LanguageGame「末」,\ntheme:「始」情感表达「末」,\nwordCount:「始」5「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "EvolveDictionary",
+        "description": "手动触发词典演化。执行语义聚类、低频词淘汰、近义词合并和多义映射生成，并将结果写入词典。\n参数:\n- command (字符串, 必需): 固定值 \"EvolveDictionary\"\n- dialect (字符串, 可选): 要演化的方言名称，默认 \"default\"\n- dryRun (布尔, 可选): 如果为 true，只返回演化预览而不实际修改词典\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」EvoLang「末」,\ncommand:「始」EvolveDictionary「末」,\ndialect:「始」default「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "QueryDictionary",
+        "description": "查询当前方言词典内容。支持按词条查询、按主题过滤或获取完整词典摘要。\n参数:\n- command (字符串, 必需): 固定值 \"QueryDictionary\"\n- word (字符串, 可选): 查询特定词条\n- dialect (字符串, 可选): 方言名称，默认 \"default\"\n- filter (字符串, 可选): 按主题/标签过滤，如 \"emotion\"、\"tech\"\n- limit (数字, 可选): 返回结果数量限制，默认 20\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」EvoLang「末」,\ncommand:「始」QueryDictionary「末」,\ndialect:「始」default「末」,\nlimit:「始」10「末」\n<<<[END_TOOL_REQUEST]>>>\n\n本插件支持批量串行调用，格式如下:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」EvoLang「末」,\ncommand1:「始」LanguageGame「末」,\ntheme1:「始」科技术语「末」,\ncommand2:「始」EncryptMessage「末」,\ntext2:「始」测试加密「末」,\nagentId2:「始」AlphaAgent「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

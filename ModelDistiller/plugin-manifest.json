@@ -1,0 +1,58 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "ModelDistiller",
+  "version": "1.0.0",
+  "displayName": "跨模型能力蒸馏流水线",
+  "description": "将强模型（Pro）的思维链轨迹记录下来，并在弱模型（Flash）执行相似任务时进行检索、加权融合与上下文注入，实现跨模型能力跃迁。",
+  "author": "VCP Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node Distiller.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 30000
+  },
+  "configSchema": {
+    "TOP_K_TRACES": {
+      "type": "number",
+      "description": "蒸馏时检索的最大轨迹数量",
+      "default": 5
+    },
+    "SIMILARITY_THRESHOLD": {
+      "type": "number",
+      "description": "相似度阈值，低于此值的轨迹不会被纳入蒸馏结果",
+      "default": 0.6
+    },
+    "MAX_CONTEXT_TOKENS": {
+      "type": "number",
+      "description": "蒸馏注入上下文的最大 token 数",
+      "default": 4000
+    },
+    "PAIR_CONFIG": {
+      "type": "string",
+      "description": "师徒制配对关系，格式为 'proModel:flashModel'，多组用分号分隔",
+      "default": "gemini-2.5-pro:gemini-2.0-flash"
+    },
+    "KNOWLEDGE_BASE_ENDPOINT": {
+      "type": "string",
+      "description": "KnowledgeBaseManager / TagMemo 的 API endpoint（如在本地则留空使用文件存储）",
+      "default": ""
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "RecordTrace",
+        "description": "调用此工具可将强模型完成任务后的完整思维链（CoT）、中间结果和最终输出记录到知识库中，以供后续蒸馏使用。\n参数:\n- command (字符串, 必需): 固定值 \"RecordTrace\"\n- modelId (字符串, 必需): 产生此轨迹的模型标识，如 \"gemini-2.5-pro\"、\"claude-opus\" 等\n- modelTier (字符串, 可选): 模型级别，\"pro\" 或 \"flash\"，默认 \"pro\"\n- agentName (字符串, 可选): 产生此轨迹的 Agent 署名\n- taskTopic (字符串, 必需): 任务主题描述，如 \"代码重构\"、\"数学证明\"\n- tags (字符串, 可选): 标签列表，用逗号分隔，如 \"javascript,refactoring,performance\"\n- chainOfThought (字符串, 必需): 完整的思维链文本\n- intermediateResults (字符串, 可选): 中间结果，用 \"|||\" 分隔多个结果\n- finalOutput (字符串, 必需): 最终输出结果\n- contextUsed (字符串, 可选): 使用了哪些上下文信息\n- qualityScore (数字, 可选): 质量评分 0-1，默认 0.8\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ModelDistiller「末」,\ncommand:「始」RecordTrace「末」,\nmodelId:「始」gemini-2.5-pro「末」,\ntaskTopic:「始」代码重构「末」,\ntags:「始」javascript,refactoring「末」,\nchainOfThought:「始」首先分析项目结构...然后识别出...「末」,\nfinalOutput:「始」重构方案如下...「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」ModelDistiller「末」,\ncommand:「始」RecordTrace「末」,\nmodelId:「始」gemini-2.5-pro「末」,\ntaskTopic:「始」代码重构「末」,\ntags:「始」javascript,refactoring,performance「末」,\nchainOfThought:「始」首先分析代码的依赖关系图，发现模块A和模块B存在循环依赖...「末」,\nfinalOutput:「始」建议采用策略模式重构，将公共逻辑抽取到独立模块C中...「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "DistillTrace",
+        "description": "调用此工具可为当前（弱）模型检索与当前任务最相关的强模型轨迹，并生成结构化蒸馏上下文，注入系统提示词以提升任务完成质量。\n参数:\n- command (字符串, 必需): 固定值 \"DistillTrace\"\n- taskDescription (字符串, 必需): 当前任务的描述，用于匹配相关轨迹\n- taskTopic (字符串, 可选): 任务主题，用于增强匹配精度\n- targetModelId (字符串, 可选): 当前弱模型标识，如 \"gemini-2.0-flash\"，用于查找配对的强模型轨迹\n- tags (字符串, 可选): 偏好标签，用逗号分隔\n- topK (数字, 可选): 返回的最大轨迹数，覆盖默认 TOP_K_TRACES\n- maxTokens (数字, 可选): 最大上下文 token 数，覆盖默认 MAX_CONTEXT_TOKENS\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ModelDistiller「末」,\ncommand:「始」DistillTrace「末」,\ntaskDescription:「始」需要对一个Express.js项目进行性能优化「末」,\ntaskTopic:「始」性能优化「末」,\ntags:「始」javascript,express,performance「末」\n<<<[END_TOOL_REQUEST]>>>\n\n本插件支持批量串行调用，格式如下:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ModelDistiller「末」,\ncommand1:「始」RecordTrace「末」,\nmodelId1:「始」gemini-2.5-pro「末」,\ntaskTopic1:「始」代码重构「末」,\nchainOfThought1:「始」...「末」,\nfinalOutput1:「始」...「末」,\ncommand2:「始」DistillTrace「末」,\ntaskDescription2:「始」继续优化同一项目「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」ModelDistiller「末」,\ncommand:「始」DistillTrace「末」,\ntaskDescription:「始」需要对一个Express.js项目进行性能优化「末」,\ntags:「始」javascript,express,performance「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
