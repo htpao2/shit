@@ -1,0 +1,33 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "RSS",
+  "version": "1.0.0",
+  "displayName": "RSS新闻每日推送",
+  "description": "每日从配置的RSS源中抓取最新简报，通过 {{VCPRSS}} 提供给系统提示词，支持动态语义折叠。",
+  "author": "Kilo Code",
+  "pluginType": "static",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node RSS.js"
+  },
+  "communication": {
+    "protocol": "stdio"
+  },
+  "configSchema": {
+    "RSS_FEED_URL": {
+      "type": "string",
+      "description": "RSS订阅地址",
+      "default": "https://raw.githubusercontent.com/imjuya/juya-ai-daily/master/feed.xml"
+    },
+    "RSS_SAVE_PATH": {
+      "type": "string",
+      "description": "每日新闻保存的本地文件夹路径",
+      "default": "./DailyNews"
+    },
+    "FETCH_INTERVAL_MS": {
+      "type": "number",
+      "description": "刷新间隔(毫秒)，默认1小时(3600000)",
+      "default": 3600000
+    }
+  }
+}
