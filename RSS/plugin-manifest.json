@@ -11,7 +11,8 @@
     "command": "node RSS.js"
   },
   "communication": {
-    "protocol": "stdio"
+    "protocol": "stdio",
+    "timeout": 30000
   },
   "capabilities": {
     "systemPromptPlaceholders": [
@@ -32,11 +33,6 @@
       "type": "string",
       "description": "每日新闻保存的本地文件夹路径",
       "default": "./DailyNews"
-    },
-    "FETCH_INTERVAL_MS": {
-      "type": "number",
-      "description": "刷新间隔(毫秒)，默认1小时(3600000)",
-      "default": 3600000
     }
   }
 }

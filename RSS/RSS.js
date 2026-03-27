@@ -1,3 +1,4 @@
+require('dotenv').config({ path: require('path').resolve(__dirname, 'config.env') });
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
@@ -6,7 +7,6 @@ const { XMLParser } = require('fast-xml-parser');
 // ================= 配置初始化 =================
 const RSS_FEED_URL = process.env.RSS_FEED_URL || 'https://imjuya.github.io/juya-ai-daily/rss.xml';
 const RSS_SAVE_PATH = process.env.RSS_SAVE_PATH || './DailyNews';
-const FETCH_INTERVAL_MS = parseInt(process.env.FETCH_INTERVAL_MS || '3600000', 10);
 
 
 if (!fs.existsSync(RSS_SAVE_PATH)) {
@@ -126,7 +126,7 @@ async function runStaticPlugin() {
             }
         ]
     };
-    console.log(JSON.stringify(vcpOutput));
+    console.log(JSON.stringify(vcpOutput, null, 2));
 
 } catch (err) {
     console.log(JSON.stringify({
