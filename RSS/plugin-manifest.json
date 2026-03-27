@@ -13,6 +13,15 @@
   "communication": {
     "protocol": "stdio"
   },
+  "capabilities": {
+    "systemPromptPlaceholders": [
+      {
+        "placeholder": "{{VCPRSS}}",
+        "description": "每日 RSS 新闻简报，支持语义折叠。根据用户话题相关性动态展开详细概览或极简摘要。"
+      }
+    ]
+  },
+  "refreshIntervalCron": "0 6,12,18 * * *",
   "configSchema": {
     "RSS_FEED_URL": {
       "type": "string",
