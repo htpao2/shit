@@ -1,3 +1,4 @@
+require('dotenv').config({ path: require('path').resolve(__dirname, 'config.env') });
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
@@ -6,7 +7,6 @@ const { XMLParser } = require('fast-xml-parser');
 // ================= 配置初始化 =================
 const RSS_FEED_URL = process.env.RSS_FEED_URL || 'https://imjuya.github.io/juya-ai-daily/rss.xml';
 const RSS_SAVE_PATH = process.env.RSS_SAVE_PATH || './DailyNews';
-const FETCH_INTERVAL_MS = parseInt(process.env.FETCH_INTERVAL_MS || '3600000', 10);
 
 
 if (!fs.existsSync(RSS_SAVE_PATH)) {
@@ -68,16 +68,44 @@ function saveToDailyFile(content) {
 }
 
 
-function extractDailyOverview(fullMarkdown) {
-    if (!fullMarkdown) return "暂无正文内容。";
-    // 增强正则：兼容多种空格和层级
-    const regex = /##\s*概览([\s\S]*?)(?=\n##|$)/i;
-    const match = fullMarkdown.match(regex);
-    if (match && match[1]) {
-        return match[1].trim();
+function stripHtml(html) {
+    if (!html) return '';
+    return html
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<\/li>/gi, '\n')
+        .replace(/<\/h[1-6]>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+}
+
+
+function extractDailyOverview(content) {
+    if (!content) return "暂无正文内容。";
+
+    // 1. 尝试从 HTML 中提取 <h2>概览</h2> 之后的内容
+    const htmlRegex = /<h2[^>]*>\s*概览\s*<\/h2>([\s\S]*?)(?=<h[12][^>]*>|$)/i;
+    const htmlMatch = content.match(htmlRegex);
+    if (htmlMatch && htmlMatch[1]) {
+        return stripHtml(htmlMatch[1]);
     }
-    // 兜底：如果没找到概览，截取前300字
-    return fullMarkdown.slice(0, 300).replace(/[\r\n]+/g, ' ') + '...';
+
+    // 2. 兼容 Markdown 格式的 ## 概览
+    const mdRegex = /##\s*概览([\s\S]*?)(?=\n##|$)/i;
+    const mdMatch = content.match(mdRegex);
+    if (mdMatch && mdMatch[1]) {
+        return mdMatch[1].trim();
+    }
+
+    // 3. 兜底：剥离 HTML 后截取前 800 字
+    const plain = stripHtml(content);
+    return plain.slice(0, 800).replace(/[\r\n]+/g, ' ') + '...';
 }
 
 
@@ -102,7 +130,7 @@ async function runStaticPlugin() {
     const latest = items[0]; 
     const title = latest.title || "今日早报";
     const link = latest.link?.href || latest.link || "";
-    const content = latest.description || latest.summary || latest.content || "";
+    const content = latest['content:encoded'] || latest.description || latest.summary || latest.content || "";
     const overview = extractDailyOverview(content);
 
     saveToDailyFile({ updateTime: new Date().toLocaleString(), title, link, overview });
@@ -126,7 +154,7 @@ async function runStaticPlugin() {
             }
         ]
     };
-    console.log(JSON.stringify(vcpOutput));
+    console.log(JSON.stringify(vcpOutput, null, 2));
 
 } catch (err) {
     console.log(JSON.stringify({
@@ -143,5 +171,8 @@ async function runStaticPlugin() {
 }
 
 
-runStaticPlugin();
-setInterval(runStaticPlugin, FETCH_INTERVAL_MS);
+runStaticPlugin().then(() => {
+    process.exit(0);
+}).catch(() => {
+    process.exit(1);
+});
