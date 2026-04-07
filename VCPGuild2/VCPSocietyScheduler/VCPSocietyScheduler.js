@@ -4,6 +4,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
 const dotenv = require('dotenv');
 
 // --- 配置变量 ---
@@ -14,6 +15,8 @@ let WEATHER_API_ENABLED = true;
 let NEWS_API_ENABLED = true;
 let FORUM_CHECK_ENABLED = true;
 let RANDOM_WAKE_PROBABILITY = 0.1;
+let VCP_PORT = '8080';
+let VCP_KEY = '';
 
 // --- 状态变量 ---
 let pulseInterval = null;
@@ -29,6 +32,10 @@ let AGENT_PROFILES = {};
 
 function initialize(config, dependencies) {
     DEBUG_MODE = String(config.DebugMode || 'false').toLowerCase() === 'true';
+    
+    // 读取 VCP 连接信息
+    VCP_PORT = config.PORT || '8080';
+    VCP_KEY = config.Key || '';
     
     PULSE_INTERVAL_MINUTES = parseInt(config.SOCIETY_PULSE_INTERVAL_MINUTES || '30', 10);
     SOCIETY_ENABLED = String(config.SOCIETY_ENABLED || 'true').toLowerCase() === 'true';
@@ -605,28 +612,65 @@ async function checkAgentBusy(agentName) {
 }
 
 async function wakeAgent(agentName, monologue) {
-    if (!pluginManagerRef) {
-        return { success: false, reason: 'PluginManager not available' };
+    if (!VCP_KEY) {
+        console.error('[VCPSocietyScheduler] Cannot wake agent: VCP API Key not configured.');
+        return { success: false, reason: 'API Key not configured' };
     }
     
     try {
-        const result = await pluginManagerRef.processToolCall('AgentAssistant', {
-            agent_name: agentName,
-            prompt: monologue
-        });
+        // 使用 HTTP API 唤醒 Agent（参照论坛插件例子的模式）
+        const requestBody = `<<<[TOOL_REQUEST]>>>
+maid:「始」VCP社区调度器「末」,
+tool_name:「始」AgentAssistant「末」,
+agent_name:「始」${agentName}「末」,
+prompt:「始」${monologue}「末」,
+temporary_contact:「始」true「末」,
+<<<[END_TOOL_REQUEST]>>>`;
+
+        const result = await httpPost('/v1/human/tool', requestBody);
         
-        if (result && result.status === 'success') {
-            if (DEBUG_MODE) {
-                console.error(`[VCPSocietyScheduler] Successfully woke ${agentName}`);
-            }
-            return { success: true, agent: agentName };
+        if (DEBUG_MODE) {
+            console.error(`[VCPSocietyScheduler] Successfully woke ${agentName}, response status: ${result.statusCode}`);
         }
-        
-        return { success: false, reason: 'agent_call_failed' };
+        return { success: true, agent: agentName };
     } catch (error) {
         console.error(`[VCPSocietyScheduler] Error waking ${agentName}:`, error.message);
         return { success: false, reason: error.message };
     }
+}
+
+/**
+ * 通过 HTTP API 发送请求到 VCP Server（论坛插件例子模式）
+ */
+function httpPost(apiPath, body) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            hostname: '127.0.0.1',
+            port: VCP_PORT,
+            path: apiPath,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain;charset=UTF-8',
+                'Authorization': `Bearer ${VCP_KEY}`,
+                'Content-Length': Buffer.byteLength(body)
+            }
+        };
+
+        const req = http.request(options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => { data += chunk; });
+            res.on('end', () => {
+                resolve({ statusCode: res.statusCode, data });
+            });
+        });
+
+        req.on('error', (e) => {
+            reject(e);
+        });
+
+        req.write(body);
+        req.end();
+    });
 }
 
 // ============== 命令处理 ==============
@@ -759,7 +803,7 @@ async function handleWakeAgentWithContext(agentName, extraContext) {
         return { status: 'error', error: '缺少必需参数: agent_name' };
     }
     
-    const profile = AGENT_PROFILES[agentName];
+    let profile = AGENT_PROFILES[agentName];
     if (!profile) {
         // 使用默认配置
         profile = {

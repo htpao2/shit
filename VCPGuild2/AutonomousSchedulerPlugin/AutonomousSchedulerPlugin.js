@@ -4,6 +4,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
 const dotenv = require('dotenv');
 
 // --- State and Config Variables ---
@@ -12,6 +13,8 @@ let SCHEDULE_INTERVAL_MINUTES = 5;  // 检查间隔（分钟）
 let IDLE_PROBABILITY = 0.2;         // 空闲时随机检查概率
 let SCHEDULER_ENABLED = true;       // 是否启用自动调度
 let DEFAULT_AGENT_NAME = '小娜';    // 默认Agent
+let VCP_PORT = '8080';
+let VCP_KEY = '';
 
 let schedulerInterval = null;
 let lastCheckTime = null;
@@ -50,6 +53,10 @@ function initialize(config, dependencies) {
     
     // 读取默认Agent配置
     DEFAULT_AGENT_NAME = config.DEFAULT_AGENT_NAME || '小娜';
+    
+    // 读取 VCP 连接信息
+    VCP_PORT = config.PORT || '8080';
+    VCP_KEY = config.Key || '';
     
     // 获取PluginManager引用，用于调用其他插件
     try {
@@ -274,6 +281,23 @@ async function performScheduledCheck() {
     }
     
     try {
+        // 0. 检查并生成每日任务（调用 TaskBoard 的 GenerateDailyTasks）
+        if (pluginManagerRef) {
+            try {
+                const dailyResult = await pluginManagerRef.processToolCall('TaskBoard', {
+                    command: 'GenerateDailyTasks',
+                    maid: '自主调度系统'
+                });
+                if (DEBUG_MODE && dailyResult && dailyResult.status === 'success') {
+                    console.error(`[AutonomousSchedulerPlugin] Daily tasks check: ${dailyResult.result}`);
+                }
+            } catch (dailyErr) {
+                if (DEBUG_MODE) {
+                    console.error(`[AutonomousSchedulerPlugin] Daily tasks check error: ${dailyErr.message}`);
+                }
+            }
+        }
+        
         // 1. 获取任务板上的开放任务
         const openTasks = await getOpenTasks();
         
@@ -322,14 +346,15 @@ async function getOpenTasks() {
     
     try {
         // 调用TaskBoardPlugin的ListTasks命令
-        const result = await pluginManagerRef.processToolCall('TaskBoardPlugin', {
+        const result = await pluginManagerRef.processToolCall('TaskBoard', {
             command: 'ListTasks',
             status: 'open',
             limit: 10
         });
         
-        if (result && result.status === 'success' && result.tasks) {
-            return result.tasks;
+        if (result && result.status === 'success' && result.result) {
+            // TaskBoard 返回格式化文本，解析出任务ID列表
+            return parseTaskListFromText(result.result);
         }
         
         return [];
@@ -358,17 +383,14 @@ async function tryAssignTask(task) {
     // 2. 读取任务日记（用于上下文注入）
     const diaryContent = await readTaskDiary(task.id);
     
-    // 3. 通过AgentAssistant唤醒Agent并分配任务
+    // 3. 通过 HTTP API 唤醒Agent并分配任务（参照论坛插件例子的模式）
     try {
         const wakePrompt = buildWakePrompt(task, matchedAgent, diaryContent);
         
-        const agentResult = await pluginManagerRef.processToolCall('AgentAssistant', {
-            agent_name: matchedAgent,
-            prompt: wakePrompt
-        });
+        const wakeResult = await wakeAgentViaAPI(matchedAgent, wakePrompt);
         
-        if (agentResult && agentResult.status === 'success') {
-            // 4. 更新任务状态为进行中
+        if (wakeResult.success) {
+            // 4. 通过 processToolCall 更新任务状态为进行中
             await pluginManagerRef.processToolCall('TaskBoard', {
                 command: 'AcceptTask',
                 task_id: task.id,
@@ -414,13 +436,10 @@ async function wakeAgentForContinuation(agentName) {
         // 3. 构建继续工作的提示
         const continuationPrompt = buildContinuationPrompt(agentTask, agentName, diaryContent);
         
-        // 4. 唤醒Agent
-        const agentResult = await pluginManagerRef.processToolCall('AgentAssistant', {
-            agent_name: agentName,
-            prompt: continuationPrompt
-        });
+        // 4. 唤醒Agent（使用 HTTP API）
+        const wakeResult = await wakeAgentViaAPI(agentName, continuationPrompt);
         
-        if (agentResult && agentResult.status === 'success') {
+        if (wakeResult.success) {
             if (DEBUG_MODE) {
                 console.error(`[AutonomousSchedulerPlugin] Woke ${agentName} to continue task ${agentTask.id}`);
             }
@@ -648,20 +667,127 @@ async function getTasksByStatus(status) {
     }
     
     try {
-        const result = await pluginManagerRef.processToolCall('TaskBoardPlugin', {
+        const result = await pluginManagerRef.processToolCall('TaskBoard', {
             command: 'ListTasks',
             status: status,
             limit: 20
         });
         
-        if (result && result.status === 'success' && result.tasks) {
-            return result.tasks;
+        if (result && result.status === 'success' && result.result) {
+            return parseTaskListFromText(result.result);
         }
         
         return [];
     } catch (error) {
         return [];
     }
+}
+
+/**
+ * 通过 HTTP API 唤醒 Agent（参照论坛插件例子的模式）
+ * @param {string} agentName - Agent名称
+ * @param {string} prompt - 唤醒提示词
+ */
+async function wakeAgentViaAPI(agentName, prompt) {
+    if (!VCP_KEY) {
+        console.error('[AutonomousSchedulerPlugin] Cannot wake agent: VCP API Key not configured.');
+        return { success: false, reason: 'API Key not configured' };
+    }
+    
+    try {
+        const requestBody = `<<<[TOOL_REQUEST]>>>
+maid:「始」自主调度系统「末」,
+tool_name:「始」AgentAssistant「末」,
+agent_name:「始」${agentName}「末」,
+prompt:「始」${prompt}「末」,
+temporary_contact:「始」true「末」,
+<<<[END_TOOL_REQUEST]>>>`;
+
+        const result = await httpPost('/v1/human/tool', requestBody);
+        
+        if (DEBUG_MODE) {
+            console.error(`[AutonomousSchedulerPlugin] Woke ${agentName} via HTTP API, status: ${result.statusCode}`);
+        }
+        return { success: true, agent: agentName };
+    } catch (error) {
+        console.error(`[AutonomousSchedulerPlugin] Error waking ${agentName}:`, error.message);
+        return { success: false, reason: error.message };
+    }
+}
+
+/**
+ * 通过 HTTP API 发送请求到 VCP Server（论坛插件例子模式）
+ */
+function httpPost(apiPath, body) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            hostname: '127.0.0.1',
+            port: VCP_PORT,
+            path: apiPath,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain;charset=UTF-8',
+                'Authorization': `Bearer ${VCP_KEY}`,
+                'Content-Length': Buffer.byteLength(body)
+            }
+        };
+
+        const req = http.request(options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => { data += chunk; });
+            res.on('end', () => {
+                resolve({ statusCode: res.statusCode, data });
+            });
+        });
+
+        req.on('error', (e) => {
+            reject(e);
+        });
+
+        req.write(body);
+        req.end();
+    });
+}
+
+/**
+ * 从 TaskBoard 的格式化文本输出中解析任务列表
+ * TaskBoard 返回类似: "📋 🟡 **任务标题**\n   ID: `task-xxx`\n   ..."
+ * @param {string} text - TaskBoard 返回的格式化文本
+ * @returns {Array} 解析后的任务对象列表
+ */
+function parseTaskListFromText(text) {
+    if (!text || typeof text !== 'string') return [];
+    
+    const tasks = [];
+    // 匹配 ID 行: "   ID: `task-xxx-xxx`"
+    const idMatches = text.matchAll(/ID:\s*`([^`]+)`/g);
+    
+    for (const match of idMatches) {
+        const taskId = match[1];
+        // 提取该任务块的基本信息
+        const taskBlock = text.substring(
+            Math.max(0, text.lastIndexOf('\n', match.index)),
+            text.indexOf('\n\n', match.index) > -1 ? text.indexOf('\n\n', match.index) : text.length
+        );
+        
+        // 解析其他字段
+        const titleMatch = taskBlock.match(/\*\*(.+?)\*\*/);
+        const assigneeMatch = taskBlock.match(/负责人:\s*(.+)/);
+        const skillsMatch = taskBlock.match(/技能:\s*(.+)/);
+        const deadlineMatch = taskBlock.match(/截止:\s*(.+)/);
+        const statusMatch = taskBlock.match(/状态:\s*(\S+)/);
+        
+        tasks.push({
+            id: taskId,
+            title: titleMatch ? titleMatch[1] : '',
+            assignee: assigneeMatch ? assigneeMatch[1].trim() : null,
+            required_skills: skillsMatch ? skillsMatch[1].split(',').map(s => s.trim()) : [],
+            deadline: deadlineMatch ? deadlineMatch[1].trim() : null,
+            status: statusMatch ? statusMatch[1].trim() : 'open'
+        });
+    }
+    
+    return tasks;
 }
 
 /**

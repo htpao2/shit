@@ -85,6 +85,26 @@
       {
         "commandIdentifier": "ReadTaskLog",
         "description": "功能: 读取任务的日记本内容。用于了解任务的历史进展，方便接手或协作。\n参数:\n- task_id (字符串, 必需): 任务ID。\n- lines (整数, 可选): 只读取最近N行，用于快速浏览。不提供则返回完整日记。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」ReadTaskLog「末」,\ntask_id:「始」task-xxx-xxx「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "PostDailyTask",
+        "description": "功能: 创建每日任务模板。系统会根据模板每天自动在任务板上发布新任务。\n参数:\n- title (字符串, 必需): 每日任务标题。\n- description (字符串, 必需): 每日任务的详细描述和要求。\n- required_skills (字符串数组, 可选): 所需技能标签列表。\n- priority (字符串, 可选): 优先级，可选 'low', 'medium', 'high', 'urgent'。默认 'medium'。\n- assigned_agent (字符串, 可选): 指定执行此任务的Agent名称。\n- cron_description (字符串, 可选): 执行周期描述（如 '每天', '工作日', '每周一'），默认 '每天'。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」PostDailyTask「末」,\ntitle:「始」每日系统巡查「末」,\ndescription:「始」检查系统状态、磁盘空间、日志大小，生成巡查报告。「末」,\nrequired_skills:「始」[\"management\", \"system\"]「末」,\nassigned_agent:「始」小娜「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "ListDailyTasks",
+        "description": "功能: 列出所有每日任务模板，查看配置和执行状态。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」ListDailyTasks「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "RemoveDailyTask",
+        "description": "功能: 删除一个每日任务模板。\n参数:\n- daily_id (字符串, 必需): 每日任务模板ID。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」RemoveDailyTask「末」,\ndaily_id:「始」daily-xxx-xxx「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "ToggleDailyTask",
+        "description": "功能: 启用或禁用一个每日任务模板。\n参数:\n- daily_id (字符串, 必需): 每日任务模板ID。\n- enabled (字符串, 可选): 'true' 或 'false'。不提供则切换当前状态。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」ToggleDailyTask「末」,\ndaily_id:「始」daily-xxx-xxx「末」,\nenabled:「始」false「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GenerateDailyTasks",
+        "description": "功能: 检查所有每日任务模板，将今天还没有发布过的任务自动发布到任务板。通常由调度器自动调用，也可手动触发。\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」TaskBoard「末」,\ncommand:「始」GenerateDailyTasks「末」\n<<<[END_TOOL_REQUEST]>>>"
       }
     ]
   }

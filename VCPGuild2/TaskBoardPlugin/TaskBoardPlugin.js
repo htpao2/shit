@@ -14,6 +14,7 @@ const { v4: uuidv4 } = require('uuid');
 const DATA_DIR = process.env.TASK_BOARD_DATA_DIR || path.join(__dirname, 'data');
 const TASKS_FILE = path.join(DATA_DIR, 'tasks.json');
 const LOGS_DIR = path.join(DATA_DIR, 'logs');
+const DAILY_TASKS_FILE = path.join(DATA_DIR, 'daily_tasks.json');
 const MAX_ACTIVE_TASKS = parseInt(process.env.MAX_ACTIVE_TASKS || '3', 10);
 const TASK_TIMEOUT_HOURS = parseInt(process.env.TASK_TIMEOUT_HOURS || '24', 10);
 const DEBUG_MODE = String(process.env.DEBUG_MODE || 'false').toLowerCase() === 'true';
@@ -724,6 +725,237 @@ function readTaskLog(args) {
     }
 }
 
+// ============== 每日任务管理 ==============
+
+const { v4: uuidv4_daily } = require('uuid');
+
+/**
+ * 加载每日任务模板
+ */
+function loadDailyTasks() {
+    ensureDataDir();
+    if (!fs.existsSync(DAILY_TASKS_FILE)) {
+        return {};
+    }
+    try {
+        const data = fs.readFileSync(DAILY_TASKS_FILE, 'utf-8');
+        return JSON.parse(data);
+    } catch (e) {
+        if (DEBUG_MODE) console.error(`[TaskBoard] Error loading daily tasks: ${e.message}`);
+        return {};
+    }
+}
+
+/**
+ * 保存每日任务模板
+ */
+function saveDailyTasks(dailyTasks) {
+    ensureDataDir();
+    try {
+        fs.writeFileSync(DAILY_TASKS_FILE, JSON.stringify(dailyTasks, null, 2), 'utf-8');
+        return true;
+    } catch (e) {
+        if (DEBUG_MODE) console.error(`[TaskBoard] Error saving daily tasks: ${e.message}`);
+        return false;
+    }
+}
+
+/**
+ * PostDailyTask - 创建每日任务模板
+ */
+function postDailyTask(args, maid) {
+    if (!args.title || !args.description) {
+        return { status: 'error', error: '缺少必需参数: title 和 description' };
+    }
+
+    const dailyTasks = loadDailyTasks();
+    const dailyId = `daily-${Date.now()}-${uuidv4_daily().substring(0, 6)}`;
+
+    // 解析 required_skills
+    let requiredSkills = [];
+    if (args.required_skills) {
+        if (typeof args.required_skills === 'string') {
+            try {
+                requiredSkills = JSON.parse(args.required_skills);
+            } catch (e) {
+                requiredSkills = args.required_skills.split(',').map(s => s.trim());
+            }
+        } else if (Array.isArray(args.required_skills)) {
+            requiredSkills = args.required_skills;
+        }
+    }
+
+    dailyTasks[dailyId] = {
+        id: dailyId,
+        title: args.title,
+        description: args.description,
+        required_skills: requiredSkills,
+        priority: args.priority || 'medium',
+        assigned_agent: args.assigned_agent || null,
+        cron_description: args.cron_description || '每天',
+        enabled: true,
+        last_posted: null,
+        last_posted_task_id: null,
+        total_posted: 0,
+        created_by: maid || 'Unknown',
+        created_at: new Date().toISOString()
+    };
+
+    if (!saveDailyTasks(dailyTasks)) {
+        return { status: 'error', error: '保存每日任务模板失败' };
+    }
+
+    return {
+        status: 'success',
+        result: `【每日任务已创建】\n\n🔄 **${args.title}**\n\n模板ID: \`${dailyId}\`\n周期: ${dailyTasks[dailyId].cron_description}\n优先级: ${dailyTasks[dailyId].priority}\n${args.assigned_agent ? `指定Agent: ${args.assigned_agent}\n` : ''}\n每日任务模板已创建，调度器会在每天自动将此任务发布到任务板。`
+    };
+}
+
+/**
+ * ListDailyTasks - 列出所有每日任务模板
+ */
+function listDailyTasks(args) {
+    const dailyTasks = loadDailyTasks();
+    const entries = Object.values(dailyTasks);
+
+    if (entries.length === 0) {
+        return { status: 'success', result: '【每日任务板】当前没有配置任何每日任务模板。' };
+    }
+
+    let resultText = `【每日任务板】共 ${entries.length} 个任务模板:\n\n`;
+
+    for (const dt of entries) {
+        const statusIcon = dt.enabled ? '✅' : '⏸️';
+        resultText += `${statusIcon} 🔄 **${dt.title}**\n`;
+        resultText += `   模板ID: \`${dt.id}\`\n`;
+        resultText += `   周期: ${dt.cron_description} | 优先级: ${dt.priority}\n`;
+        if (dt.assigned_agent) {
+            resultText += `   指定Agent: ${dt.assigned_agent}\n`;
+        }
+        if (dt.required_skills && dt.required_skills.length > 0) {
+            resultText += `   技能: ${dt.required_skills.join(', ')}\n`;
+        }
+        resultText += `   已发布次数: ${dt.total_posted || 0}`;
+        if (dt.last_posted) {
+            resultText += ` | 上次发布: ${dt.last_posted}`;
+        }
+        resultText += `\n\n`;
+    }
+
+    return { status: 'success', result: resultText };
+}
+
+/**
+ * RemoveDailyTask - 删除每日任务模板
+ */
+function removeDailyTask(args) {
+    if (!args.daily_id) {
+        return { status: 'error', error: '缺少必需参数: daily_id' };
+    }
+
+    const dailyTasks = loadDailyTasks();
+    if (!dailyTasks[args.daily_id]) {
+        return { status: 'error', error: `每日任务模板 ${args.daily_id} 不存在` };
+    }
+
+    const title = dailyTasks[args.daily_id].title;
+    delete dailyTasks[args.daily_id];
+
+    if (!saveDailyTasks(dailyTasks)) {
+        return { status: 'error', error: '保存失败' };
+    }
+
+    return { status: 'success', result: `【每日任务已删除】\n\n🗑️ **${title}** 已被移除。` };
+}
+
+/**
+ * ToggleDailyTask - 启用/禁用每日任务模板
+ */
+function toggleDailyTask(args) {
+    if (!args.daily_id) {
+        return { status: 'error', error: '缺少必需参数: daily_id' };
+    }
+
+    const dailyTasks = loadDailyTasks();
+    if (!dailyTasks[args.daily_id]) {
+        return { status: 'error', error: `每日任务模板 ${args.daily_id} 不存在` };
+    }
+
+    const enabled = args.enabled !== undefined ? String(args.enabled).toLowerCase() === 'true' : !dailyTasks[args.daily_id].enabled;
+    dailyTasks[args.daily_id].enabled = enabled;
+
+    if (!saveDailyTasks(dailyTasks)) {
+        return { status: 'error', error: '保存失败' };
+    }
+
+    return {
+        status: 'success',
+        result: `【每日任务${enabled ? '已启用' : '已禁用'}】\n\n**${dailyTasks[args.daily_id].title}** 已${enabled ? '启用 ✅' : '禁用 ⏸️'}。`
+    };
+}
+
+/**
+ * GenerateDailyTasks - 检查每日任务模板并自动发布今天还没有发布的任务
+ * 通常由调度器定时调用
+ */
+function generateDailyTasks(args, maid) {
+    const dailyTasks = loadDailyTasks();
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    let generated = 0;
+    const generatedList = [];
+
+    for (const [dailyId, template] of Object.entries(dailyTasks)) {
+        if (!template.enabled) continue;
+
+        // 检查今天是否已经发布过
+        if (template.last_posted) {
+            const lastPostedDate = template.last_posted.split('T')[0];
+            if (lastPostedDate === today) {
+                continue; // 今天已发布，跳过
+            }
+        }
+
+        // 发布新任务到主任务板
+        const now = new Date().toISOString();
+        const result = postTask({
+            title: `[每日] ${template.title}`,
+            description: template.description,
+            required_skills: template.required_skills,
+            priority: template.priority,
+            deadline: `${today} 23:59`
+        }, template.assigned_agent || maid || '每日任务系统');
+
+        if (result.status === 'success') {
+            // 从返回文本中提取任务ID
+            const idMatch = result.result.match(/`(task-[^`]+)`/);
+            const newTaskId = idMatch ? idMatch[1] : null;
+
+            // 更新模板状态
+            template.last_posted = now;
+            template.last_posted_task_id = newTaskId;
+            template.total_posted = (template.total_posted || 0) + 1;
+            generated++;
+            generatedList.push({ dailyId, title: template.title, taskId: newTaskId });
+        }
+    }
+
+    saveDailyTasks(dailyTasks);
+
+    if (generated === 0) {
+        return {
+            status: 'success',
+            result: `【每日任务检查】\n\n今日所有每日任务均已发布或无启用的模板。`
+        };
+    }
+
+    let resultText = `【每日任务已生成】\n\n今日新发布 ${generated} 个任务：\n\n`;
+    for (const item of generatedList) {
+        resultText += `🔄 **${item.title}** → 任务ID: \`${item.taskId || '未知'}\`\n`;
+    }
+
+    return { status: 'success', result: resultText };
+}
+
 // ============== 主入口 ==============
 
 /**
@@ -763,10 +995,20 @@ function processRequest(request) {
             return appendTaskLog(args, maid);
         case 'ReadTaskLog':
             return readTaskLog(args);
+        case 'PostDailyTask':
+            return postDailyTask(args, maid);
+        case 'ListDailyTasks':
+            return listDailyTasks(args);
+        case 'RemoveDailyTask':
+            return removeDailyTask(args);
+        case 'ToggleDailyTask':
+            return toggleDailyTask(args);
+        case 'GenerateDailyTasks':
+            return generateDailyTasks(args, maid);
         default:
             return {
                 status: 'error',
-                error: `未知命令: ${command}。可用命令: ListTasks, GetTask, PostTask, AcceptTask, JoinTask, UpdateProgress, SubmitTask, CompleteTask, FailTask, AbandonTask, AppendTaskLog, ReadTaskLog`
+                error: `未知命令: ${command}。可用命令: ListTasks, GetTask, PostTask, AcceptTask, JoinTask, UpdateProgress, SubmitTask, CompleteTask, FailTask, AbandonTask, AppendTaskLog, ReadTaskLog, PostDailyTask, ListDailyTasks, RemoveDailyTask, ToggleDailyTask, GenerateDailyTasks`
             };
     }
 }
