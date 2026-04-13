@@ -1,0 +1,39 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "PluginInfoPlugin",
+  "displayName": "RAG 工具召回系统",
+  "version": "2.0.0",
+  "description": "基于 RAG（检索增强生成）的工具召回系统。它能自动扫描所有已安装插件，提取其核心语义标签并存入虚拟日记本供主系统召回。支持主动根据意图搜索对应插件。",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node ./info_handler.js"
+  },
+  "communication": {
+    "protocol": "stdio"
+  },
+  "configSchema": [
+    {
+      "key": "LLM_API_KEY",
+      "type": "string",
+      "description": "用于自动打标（Tag 提取）的 LLM API Key"
+    }
+  ],
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "command": "sync_tools_to_rag",
+        "description": "扫描所有已安装插件，通过 LLM 自动提取其功能标签（Tag），并同步到虚拟日记本以启用系统级的 RAG 被动召回。当安装了新插件或修改了现有插件描述后，应调用此工具。"
+      },
+      {
+        "command": "search_plugins",
+        "description": "根据用户的意图或关键词（query）主动搜索相关工具及其详细调用格式。当 RAG 系统由于相似度由于未命中并未召回对应工具，但你确定系统可能存在相关工具时，应调用此命令进行全局主动检索。",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」PluginInfoPlugin「末」,\ncommand:「始」search_plugins「末」,\nquery:「始」音频生成「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "list_available_vcp_plugins",
+        "description": "废弃提示：此命令现在会自动触发全量同步并激活 RAG 系统。建议改用 search_plugins 或利用对话中的自动召回。"
+      }
+    ]
+  }
+}
