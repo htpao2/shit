@@ -1,0 +1,48 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "radare2-mcp",
+  "version": "1.0.0",
+  "displayName": "Radare2 MCP VCP Plugin",
+  "description": "An MCP server for radare2, providing powerful binary analysis tools for AI agents.",
+  "author": "pancake",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node index.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 30000
+  },
+  "configSchema": {
+    "R2MCP_PORT": {
+      "type": "integer",
+      "description": "The port for the radare2-mcp HTTP server.",
+      "default": 8765
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "open_file",
+        "description": "Opens a binary file with radare2 for analysis. Call this tool before any other one. Use an absolute file_path.\n参数:\n- file_path (字符串, 必需): 要打开的文件路径。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」radare2-mcp「末」,\ncommand:「始」open_file「末」,\nfile_path:「始」/path/to/binary「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」radare2-mcp「末」,\ncommand:「始」open_file「末」,\nfile_path:「始」/bin/ls「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "list_functions",
+        "description": "Lists all functions found in the current binary.\n参数:\n- only_named (布尔, 可选): 仅列出有名字的函数 (默认为 false)。\n- count (布尔, 可选): 仅返回函数个数 (默认为 false)。\n- filter (字符串, 可选): 使用正则过滤函数名。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」radare2-mcp「末」,\ncommand:「始」list_functions「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」radare2-mcp「末」,\ncommand:「始」list_functions「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "get_disassembly",
+        "description": "Gets the disassembly of a function or at a specific address.\n参数:\n- address (字符串, 可选): 函数名或起始地址。\n- lines (整数, 可选): 打印的行数 (缺省时打印整个函数)。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」radare2-mcp「末」,\ncommand:「始」get_disassembly「末」,\naddress:「始」main「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」radare2-mcp「末」,\ncommand:「始」get_disassembly「末」,\naddress:「始」0x00401000「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "run_command",
+        "description": "Runs a raw radare2 command. This is a powerful tool, use with caution.\n参数:\n- command (字符串, 必需): 要运行的 r2 命令。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」radare2-mcp「末」,\ncommand:「始」run_command「末」,\ncommand_str:「始」px 64「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」radare2-mcp「末」,\ncommand:「始」run_command「末」,\ncommand_str:「始」iI「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
