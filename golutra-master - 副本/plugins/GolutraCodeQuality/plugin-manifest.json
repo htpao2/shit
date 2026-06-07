@@ -1,0 +1,57 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "GolutraCodeQuality",
+  "version": "1.0.0",
+  "displayName": "Golutra 代码质量检查器",
+  "description": "运行静态代码分析和质量检查，支持 ESLint, Clippy, Pylint 等检查工具",
+  "author": "Golutra Team",
+  "pluginType": "asynchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node code-quality.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 120000
+  },
+  "configSchema": {
+    "DEFAULT_LINTER": {
+      "type": "string",
+      "description": "默认代码检查工具",
+      "default": "auto"
+    },
+    "MAX_FILES_PER_CHECK": {
+      "type": "number",
+      "description": "单次检查最大文件数",
+      "default": 100
+    },
+    "LINT_TIMEOUT": {
+      "type": "number",
+      "description": "Lint 超时时间(毫秒)",
+      "default": 60000
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "runLinting",
+        "description": "运行代码检查。这是一个异步操作，任务提交后会立即返回一个动态上下文占位符。\n参数:\n- projectPath (字符串, 必需): 项目根目录路径\n- linter (字符串, 可选): 指定检查工具 (eslint/clippy/pylint/auto)，默认 auto 自动检测\n- files (数组, 可选): 指定检查的文件列表\n- fix (布尔, 可选): 是否自动修复，默认 false\n返回: 动态上下文占位符 {{VCP_ASYNC_RESULT::GolutraCodeQuality::{taskId}}}\n请在你的回复中包含此占位符原文。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraCodeQuality「末」,\ncommand:「始」runLinting「末」,\nprojectPath:「始」/path/to/project「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraCodeQuality「末」,\ncommand:「始」runLinting「末」,\nprojectPath:「始」./my-project「末」,\nlinter:「始」eslint「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "analyzeComplexity",
+        "description": "分析代码复杂度（同步操作）\n参数:\n- projectPath (字符串, 必需): 项目根目录路径\n- maxDepth (数字, 可选): 扫描深度，默认 3\n返回: 文件复杂度统计和热点文件列表"
+      },
+      {
+        "commandIdentifier": "generateQualityReport",
+        "description": "生成代码质量综合报告（同步操作）\n参数:\n- projectPath (字符串, 必需): 项目根目录路径\n- format (字符串, 可选): 报告格式 json/markdown，默认 json\n返回: 代码质量报告，包含文件统计、复杂度分析、潜在问题列表"
+      }
+    ]
+  },
+  "webSocketPush": {
+    "enabled": true,
+    "messageType": "code_quality_status",
+    "usePluginResultAsMessage": true,
+    "targetClientType": "VCPLog"
+  }
+}

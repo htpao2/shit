@@ -1,0 +1,59 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "GolutraSettingsSimplified",
+  "version": "1.0.0",
+  "displayName": "Golutra 设置管理器",
+  "description": "管理应用配置的读取、修改、导入、导出和恢复默认",
+  "author": "Golutra Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node settings-simplified.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 10000
+  },
+  "configSchema": {
+    "SETTINGS_FILE_PATH": {
+      "type": "string",
+      "description": "设置文件存储路径",
+      "default": "global-settings.json"
+    },
+    "CONFIG_BACKUP_ENABLED": {
+      "type": "boolean",
+      "description": "是否启用配置备份",
+      "default": true
+    },
+    "AUTO_SAVE_INTERVAL": {
+      "type": "number",
+      "description": "自动保存间隔(秒)",
+      "default": 300
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "getSetting",
+        "description": "读取配置项\n参数:\n- key (字符串, 必需): 配置键名，支持点号分隔的路径如 account.displayName\n- category (字符串, 可选): 配置分类 (appearance/locale/account/notifications/keybinds/chat/members)\n返回: 配置值和类型信息\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraSettingsSimplified「末」,\ncommand:「始」getSetting「末」,\nkey:「始」account.displayName「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraSettingsSimplified「末」,\ncommand:「始」getSetting「末」,\nkey:「始」appearance.theme「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "setSetting",
+        "description": "修改配置项\n参数:\n- key (字符串, 必需): 配置键名\n- value (任意, 必需): 配置值\n- category (字符串, 可选): 配置分类\n返回: 保存状态和归一化后的值\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraSettingsSimplified「末」,\ncommand:「始」setSetting「末」,\nkey:「始」appearance.theme「末」,\nvalue:「始」dark「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "exportSettings",
+        "description": "导出配置文件\n参数:\n- format (字符串, 可选): 导出格式 json/yaml，默认json\n- categories (数组, 可选): 要导出的配置分类列表\n返回: 配置文件内容"
+      },
+      {
+        "commandIdentifier": "importSettings",
+        "description": "导入配置文件\n参数:\n- configData (字符串, 必需): 配置文件内容(JSON字符串)\n- merge (布尔, 可选): 是否合并导入而非覆盖，默认 true\n返回: 导入结果和冲突报告"
+      },
+      {
+        "commandIdentifier": "resetSettings",
+        "description": "恢复默认设置\n参数:\n- category (字符串, 可选): 仅重置特定分类\n返回: 重置后的设置快照"
+      }
+    ]
+  }
+}

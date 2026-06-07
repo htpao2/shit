@@ -1,0 +1,58 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "GolutraTerminalManager",
+  "version": "1.0.0",
+  "displayName": "Golutra 终端会话管理器",
+  "description": "管理终端会话的创建、写入、关闭、状态追踪和命令串行派发",
+  "author": "Golutra Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node terminal-manager.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 30000
+  },
+  "configSchema": {
+    "DEFAULT_TERMINAL_TYPE": { "type": "string", "description": "默认终端类型", "default": "xterm-256color" },
+    "SESSION_TIMEOUT": { "type": "number", "description": "会话超时时间(毫秒)", "default": 300000 },
+    "BUFFER_LIMIT": { "type": "number", "description": "输出缓冲上限", "default": 2000 },
+    "ACK_BATCH_SIZE": { "type": "number", "description": "ACK 批处理大小(字节)", "default": 5000 },
+    "ACK_FLUSH_MS": { "type": "number", "description": "ACK 刷新间隔(毫秒)", "default": 50 },
+    "COMMAND_CONFIRM_DELAY_MS": { "type": "number", "description": "命令确认延迟(毫秒)", "default": 100 }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "createSession",
+        "description": "创建新的终端会话\n参数:\n- memberId (字符串, 必需): 成员ID\n- workspaceId (字符串, 必需): 工作区ID\n- cwd (字符串, 可选): 工作目录\n- cols (数字, 可选): 终端列数，默认80\n- rows (数字, 可选): 终端行数，默认24\n- terminalType (字符串, 可选): 终端类型\n- terminalCommand (字符串, 可选): 启动命令\n- keepAlive (布尔, 可选): 是否保持会话\n返回: sessionId 和初始状态信息\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraTerminalManager「末」,\ncommand:「始」createSession「末」,\nmemberId:「始」member-1「末」,\nworkspaceId:「始」ws-1「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraTerminalManager「末」,\ncommand:「始」createSession「末」,\nmemberId:「始」claude-code「末」,\nworkspaceId:「始」workspace-abc「末」,\ncwd:「始」/home/user/project「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "writeToSession",
+        "description": "向终端会话写入数据\n参数:\n- sessionId (字符串, 必需): 会话ID\n- data (字符串, 必需): 要写入的数据\n- confirmDelay (数字, 可选): 确认延迟毫秒数，默认100\n返回: 写入确认状态"
+      },
+      {
+        "commandIdentifier": "dispatchCommand",
+        "description": "派发命令到终端会话，支持串行化避免命令交错\n参数:\n- sessionId (字符串, 必需): 会话ID\n- command (字符串, 必需): 命令文本\n- context (对象, 可选): 派发上下文，包含 conversationId, senderId 等\n返回: 派发确认状态"
+      },
+      {
+        "commandIdentifier": "getSessionStatus",
+        "description": "获取会话状态\n参数:\n- sessionId (字符串, 必需): 会话ID\n返回: connected/working/disconnected/pending/connecting 等状态值"
+      },
+      {
+        "commandIdentifier": "closeSession",
+        "description": "关闭终端会话\n参数:\n- sessionId (字符串, 必需): 会话ID\n- preserve (布尔, 可选): 是否保留会话数据\n返回: 关闭确认状态"
+      },
+      {
+        "commandIdentifier": "listSessions",
+        "description": "列出指定工作区的所有会话\n参数:\n- workspaceId (字符串, 必需): 工作区ID\n返回: 会话列表及其状态"
+      },
+      {
+        "commandIdentifier": "getSessionSnapshot",
+        "description": "获取会话的屏幕快照文本内容\n参数:\n- sessionId (字符串, 必需): 会话ID\n返回: 终端屏幕文本行数组"
+      }
+    ]
+  }
+}

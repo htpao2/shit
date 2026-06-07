@@ -1,0 +1,57 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "GolutraBuildAutomation",
+  "version": "1.0.0",
+  "displayName": "Golutra 自动化构建",
+  "description": "检测构建系统并执行自动化构建任务，支持 npm, cargo, go, maven, gradle, make 等",
+  "author": "Golutra Team",
+  "pluginType": "asynchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node build-automation.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 600000
+  },
+  "configSchema": {
+    "BUILD_TIMEOUT": {
+      "type": "number",
+      "description": "构建超时时间(毫秒)",
+      "default": 300000
+    },
+    "DEFAULT_BUILD_SCRIPT": {
+      "type": "string",
+      "description": "默认构建脚本名",
+      "default": "build"
+    },
+    "ENABLE_CACHE_DETECTION": {
+      "type": "boolean",
+      "description": "是否检测构建缓存",
+      "default": true
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "detectBuildSystem",
+        "description": "检测项目使用的构建系统（同步操作）\n参数:\n- projectPath (字符串, 必需): 项目根目录路径\n返回: 构建系统信息、可用命令和脚本列表\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraBuildAutomation「末」,\ncommand:「始」detectBuildSystem「末」,\nprojectPath:「始」/path/to/project「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraBuildAutomation「末」,\ncommand:「始」detectBuildSystem「末」,\nprojectPath:「始」./my-project「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "executeBuild",
+        "description": "执行构建任务。这是一个异步操作，任务提交后会立即返回一个动态上下文占位符。\n参数:\n- projectPath (字符串, 必需): 项目根目录路径\n- buildSystem (字符串, 可选): 指定构建系统 (npm/pnpm/yarn/cargo/go/maven/gradle/make)，默认 auto\n- script (字符串, 可选): 指定要执行的脚本名，默认 build\n- args (数组, 可选): 额外构建参数\n返回: 动态上下文占位符 {{VCP_ASYNC_RESULT::GolutraBuildAutomation::{taskId}}}\n请在你的回复中包含此占位符原文。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraBuildAutomation「末」,\ncommand:「始」executeBuild「末」,\nprojectPath:「始」/path/to/project「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "getBuildStatus",
+        "description": "获取构建系统状态信息（同步操作）\n参数:\n- projectPath (字符串, 必需): 项目根目录路径\n返回: 构建输出目录、缓存状态、最后构建时间等信息"
+      }
+    ]
+  },
+  "webSocketPush": {
+    "enabled": true,
+    "messageType": "build_automation_status",
+    "usePluginResultAsMessage": true,
+    "targetClientType": "VCPLog"
+  }
+}

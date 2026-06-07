@@ -1,0 +1,46 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "GolutraFileOps",
+  "version": "1.0.0",
+  "displayName": "Golutra 文件操作器",
+  "description": "增强的文件读写、目录列表和批量操作，支持超栈追踪分布式文件访问",
+  "author": "Golutra Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node file-ops.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 30000
+  },
+  "configSchema": {
+    "MAX_FILE_SIZE": { "type": "number", "description": "最大可读文件大小(字节)", "default": 10485760 },
+    "DEFAULT_ENCODING": { "type": "string", "description": "默认文件编码", "default": "utf8" }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "ReadFile",
+        "description": "读取并返回文件内容\n参数:\n- filePath (字符串, 必需): 文件路径\n- encoding (字符串, 可选): 编码格式，默认 utf8\n返回: 文件内容文本\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraFileOps「末」,\ncommand:「始」ReadFile「末」,\nfilePath:「始」/path/to/file.txt「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraFileOps「末」,\ncommand:「始」ReadFile「末」,\nfilePath:「始」./src/main.ts「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "WriteFile",
+        "description": "将内容写入文件\n参数:\n- filePath (字符串, 必需): 文件路径\n- content (字符串, 必需): 文件内容\n- encoding (字符串, 可选): 编码格式，默认 utf8\n- createDirs (布尔, 可选): 是否自动创建父目录，默认 true\n返回: 写入确认信息"
+      },
+      {
+        "commandIdentifier": "ListDirectory",
+        "description": "列出目录内容\n参数:\n- directoryPath (字符串, 必需): 目录路径\n- showHidden (布尔, 可选): 是否显示隐藏文件，默认 false\n- recursive (布尔, 可选): 是否递归列出，默认 false\n- maxDepth (数字, 可选): 递归最大深度，默认 3\n返回: 文件和目录列表"
+      },
+      {
+        "commandIdentifier": "DeleteFile",
+        "description": "删除文件\n参数:\n- filePath (字符串, 必需): 文件路径\n返回: 删除确认信息"
+      },
+      {
+        "commandIdentifier": "FileInfo",
+        "description": "获取文件元信息\n参数:\n- filePath (字符串, 必需): 文件路径\n返回: 文件大小、修改时间、类型等信息"
+      }
+    ]
+  }
+}

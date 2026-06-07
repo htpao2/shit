@@ -1,0 +1,69 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "GolutraChatSimplified",
+  "version": "1.0.0",
+  "displayName": "Golutra 聊天管理器",
+  "description": "简化的消息管理和历史记录查询，支持对话管理、消息搜索和未读同步",
+  "author": "Golutra Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node chat-simplified.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 15000
+  },
+  "configSchema": {
+    "MESSAGE_LIMIT": {
+      "type": "number",
+      "description": "单个对话最大消息数",
+      "default": 1000
+    },
+    "MAX_MESSAGE_LENGTH": {
+      "type": "number",
+      "description": "单条消息最大字符数",
+      "default": 1200
+    },
+    "MESSAGES_PAGE_LIMIT": {
+      "type": "number",
+      "description": "分页查询每页消息数",
+      "default": 200
+    },
+    "HISTORY_RETENTION_DAYS": {
+      "type": "number",
+      "description": "历史消息保留天数",
+      "default": 30
+    },
+    "CHAT_STORAGE_PATH": {
+      "type": "string",
+      "description": "聊天数据存储路径",
+      "default": "chat-data.json"
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "sendMessage",
+        "description": "发送消息到指定对话\n参数:\n- conversationId (字符串, 必需): 对话ID\n- content (字符串, 必需): 消息内容，最大1200字符\n- senderId (字符串, 必需): 发送者ID\n- senderName (字符串, 可选): 发送者显示名\n返回: 消息发送状态、消息ID和时间戳\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraChatSimplified「末」,\ncommand:「始」sendMessage「末」,\nconversationId:「始」conv-1「末」,\ncontent:「始」你好，世界！「末」,\nsenderId:「始」user-1「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraChatSimplified「末」,\ncommand:「始」sendMessage「末」,\nconversationId:「始」workspace-abc「末」,\ncontent:「始」分析任务已完成「末」,\nsenderId:「始」claude-code「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "getHistory",
+        "description": "获取对话历史记录\n参数:\n- conversationId (字符串, 必需): 对话ID\n- limit (数字, 可选): 返回消息数量限制，默认200\n- beforeId (字符串, 可选): 获取指定消息之前的记录（分页用）\n返回: 消息列表和分页信息"
+      },
+      {
+        "commandIdentifier": "searchMessages",
+        "description": "搜索历史消息\n参数:\n- query (字符串, 必需): 搜索关键词\n- conversationId (字符串, 可选): 限制在特定对话中搜索\n- limit (数字, 可选): 返回结果数量限制，默认 50\n返回: 匹配的消息列表"
+      },
+      {
+        "commandIdentifier": "listConversations",
+        "description": "列出所有对话\n参数:\n- workspaceId (字符串, 必需): 工作区ID\n返回: 对话列表，包含最近消息预览和未读数\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraChatSimplified「末」,\ncommand:「始」listConversations「末」,\nworkspaceId:「始」ws-1「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "createConversation",
+        "description": "创建新对话\n参数:\n- workspaceId (字符串, 必需): 工作区ID\n- name (字符串, 可选): 对话名称\n- participants (数组, 可选): 参与者ID列表\n返回: 新对话ID和初始状态"
+      }
+    ]
+  }
+}

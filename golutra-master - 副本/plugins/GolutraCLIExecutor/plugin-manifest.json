@@ -1,0 +1,77 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "GolutraCLIExecutor",
+  "version": "1.0.0",
+  "displayName": "Golutra CLI 执行器",
+  "description": "统一管理多种 AI CLI 工具的执行，支持 Claude Code, Gemini CLI, Codex CLI, OpenCode, Qwen Code, Shell",
+  "author": "Golutra Team",
+  "pluginType": "asynchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node cli-executor.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 300000
+  },
+  "configSchema": {
+    "CLAUDE_CODE_PATH": {
+      "type": "string",
+      "description": "Claude Code CLI 可执行文件路径",
+      "default": "claude"
+    },
+    "GEMINI_CLI_PATH": {
+      "type": "string",
+      "description": "Gemini CLI 可执行文件路径",
+      "default": "gemini"
+    },
+    "CODEX_CLI_PATH": {
+      "type": "string",
+      "description": "Codex CLI 可执行文件路径",
+      "default": "codex"
+    },
+    "OPENCODE_PATH": {
+      "type": "string",
+      "description": "OpenCode 可执行文件路径",
+      "default": "opencode"
+    },
+    "QWEN_CODE_PATH": {
+      "type": "string",
+      "description": "Qwen Code CLI 可执行文件路径",
+      "default": "qwen"
+    },
+    "DEFAULT_SHELL": {
+      "type": "string",
+      "description": "默认 Shell 路径",
+      "default": ""
+    },
+    "EXECUTION_TIMEOUT": {
+      "type": "number",
+      "description": "单次执行超时时间(毫秒)",
+      "default": 300000
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "executeCLI",
+        "description": "执行指定的 AI CLI 工具命令。这是一个异步操作，任务提交后会立即返回一个动态上下文占位符。\n参数:\n- tool (字符串, 必需): CLI工具名称，可选值: claude/gemini/codex/opencode/qwen/shell\n- prompt (字符串, 必需): 要发送给 CLI 工具的提示词或命令\n- args (数组, 可选): 额外命令行参数\n- cwd (字符串, 可选): 工作目录路径\n- unlimitedAccess (布尔, 可选): 是否启用无限制访问模式（仅 claude/codex 支持）\n- resumeSessionId (字符串, 可选): 要恢复的会话ID\n返回: 动态上下文占位符 {{VCP_ASYNC_RESULT::GolutraCLIExecutor::{taskId}}}\n请在你的回复中包含此占位符原文。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraCLIExecutor「末」,\ncommand:「始」executeCLI「末」,\ntool:「始」claude「末」,\nprompt:「始」帮我分析这个项目的架构「末」,\ncwd:「始」/path/to/project「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraCLIExecutor「末」,\ncommand:「始」executeCLI「末」,\ntool:「始」claude「末」,\nprompt:「始」帮我写一个hello world程序「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "listTools",
+        "description": "列出所有可用的 CLI 工具及其配置\n参数: 无\n返回: 工具列表，包含名称、路径、可用状态和支持的特性\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraCLIExecutor「末」,\ncommand:「始」listTools「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "getToolConfig",
+        "description": "获取指定 CLI 工具的详细配置信息\n参数:\n- tool (字符串, 必需): 工具名称 (claude/gemini/codex/opencode/qwen/shell)\n返回: 工具路径、默认命令、支持的 flag、是否可恢复会话等信息\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraCLIExecutor「末」,\ncommand:「始」getToolConfig「末」,\ntool:「始」claude「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  },
+  "webSocketPush": {
+    "enabled": true,
+    "messageType": "cli_execution_status",
+    "usePluginResultAsMessage": true,
+    "targetClientType": "VCPLog"
+  }
+}

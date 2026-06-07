@@ -1,0 +1,55 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "GolutraResultAggregator",
+  "version": "1.0.0",
+  "displayName": "Golutra 结果聚合器",
+  "description": "收集和整理多个任务的执行结果，生成汇总报告",
+  "author": "Golutra Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node result-aggregator.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 15000
+  },
+  "configSchema": {
+    "RESULTS_DIR": {
+      "type": "string",
+      "description": "异步结果存储目录",
+      "default": "VCPAsyncResults"
+    },
+    "MAX_RESULTS": {
+      "type": "number",
+      "description": "单次聚合最大结果数",
+      "default": 50
+    },
+    "RESULT_RETENTION_HOURS": {
+      "type": "number",
+      "description": "结果保留时间(小时)",
+      "default": 72
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "collectResults",
+        "description": "收集指定任务ID列表的执行结果\n参数:\n- taskIds (数组, 必需): 任务ID列表\n- includeRaw (布尔, 可选): 是否包含原始输出，默认 false\n返回: 各任务的执行状态和结果摘要\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraResultAggregator「末」,\ncommand:「始」collectResults「末」,\ntaskIds:「始」[\"task-id-1\",\"task-id-2\"]「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraResultAggregator「末」,\ncommand:「始」collectResults「末」,\ntaskIds:「始」[\"abc-123\",\"def-456\"]「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "generateReport",
+        "description": "生成多任务执行的聚合报告\n参数:\n- taskIds (数组, 可选): 指定任务ID列表，为空则聚合最近所有结果\n- format (字符串, 可选): 报告格式 json/markdown/summary，默认 summary\n- since (字符串, 可选): 起始时间过滤 (ISO 8601 格式)\n返回: 聚合报告，包含成功/失败统计、耗时分析和详细结果\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraResultAggregator「末」,\ncommand:「始」generateReport「末」,\nformat:「始」markdown「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "getResult",
+        "description": "获取单个任务的详细结果\n参数:\n- taskId (字符串, 必需): 任务ID\n返回: 任务的完整执行结果"
+      },
+      {
+        "commandIdentifier": "listResults",
+        "description": "列出所有可用的任务结果\n参数:\n- status (字符串, 可选): 按状态过滤 (Succeed/Failed/Pending)\n- limit (数字, 可选): 返回数量限制\n返回: 结果列表"
+      }
+    ]
+  }
+}

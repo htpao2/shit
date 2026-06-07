@@ -1,0 +1,51 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "GolutraProjectAnalyzer",
+  "version": "1.0.0",
+  "displayName": "Golutra 项目分析引擎",
+  "description": "分析项目结构、依赖关系和技术栈，生成项目综合报告",
+  "author": "Golutra Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node project-analyzer.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 30000
+  },
+  "configSchema": {
+    "MAX_DEPTH": {
+      "type": "number",
+      "description": "依赖分析最大递归深度",
+      "default": 5
+    },
+    "IGNORE_DIRS": {
+      "type": "string",
+      "description": "忽略的目录列表(逗号分隔)",
+      "default": "node_modules,.git,dist,build,target,__pycache__,.tmp"
+    },
+    "MAX_FILE_SCAN": {
+      "type": "number",
+      "description": "单次扫描最大文件数",
+      "default": 1000
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "analyzeDependencies",
+        "description": "分析项目的依赖关系\n参数:\n- projectPath (字符串, 必需): 项目根目录路径\n- deep (布尔, 可选): 是否深度分析子依赖，默认 false\n返回: 依赖列表、版本信息、依赖类型(生产/开发)和潜在问题\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraProjectAnalyzer「末」,\ncommand:「始」analyzeDependencies「末」,\nprojectPath:「始」/path/to/project「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraProjectAnalyzer「末」,\ncommand:「始」analyzeDependencies「末」,\nprojectPath:「始」./my-project「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "detectFramework",
+        "description": "检测项目使用的框架和技术栈\n参数:\n- projectPath (字符串, 必需): 项目根目录路径\n返回: 检测到的框架列表、构建工具、主要编程语言及其文件数量统计\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraProjectAnalyzer「末」,\ncommand:「始」detectFramework「末」,\nprojectPath:「始」/path/to/project「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "generateProjectReport",
+        "description": "生成项目综合分析报告，包含结构、依赖、技术栈、代码统计等\n参数:\n- projectPath (字符串, 必需): 项目根目录路径\n- format (字符串, 可选): 报告格式 json/markdown，默认 json\n返回: 完整的项目分析报告\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GolutraProjectAnalyzer「末」,\ncommand:「始」generateProjectReport「末」,\nprojectPath:「始」/path/to/project「末」,\nformat:「始」markdown「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
