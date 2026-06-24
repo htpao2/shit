@@ -1,0 +1,43 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "OriginLensEngine",
+  "version": "1.0.0",
+  "displayName": "原点透镜引擎",
+  "description": "通过纯数学向量计算和硬逻辑匹配，将复杂问题降维到宇宙基础积木，实现零幻觉的跨学科同构联想。",
+  "author": "VCP Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "python",
+    "command": "python engine_core.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 30000
+  },
+  "configSchema": {
+    "EMBEDDING_API_KEY": {
+      "type": "string",
+      "description": "用于调用 Embedding API 的密钥（支持 OpenAI/Volcengine 等）",
+      "default": ""
+    },
+    "EMBEDDING_API_URL": {
+      "type": "string",
+      "description": "Embedding API 的端点 URL",
+      "default": "https://api.openai.com/v1/embeddings"
+    },
+    "EMBEDDING_MODEL": {
+      "type": "string",
+      "description": "使用的 Embedding 模型名称",
+      "default": "text-embedding-3-small"
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "AnalyzeLogic",
+        "description": "调用原点透镜引擎进行降维打击逻辑分析。此工具会将复杂的专业描述剥离名词噪音，暴露其底层的物理硬逻辑，并返回跨学科的同构案例和降维打法。\n参数:\n- text (字符串, 必需): 需要进行去名词化并暴露底层硬逻辑的输入描述。可以是学术问题、生活现象、技术难题等任何复杂表述。\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\nmaid:「始」你的署名「末」,\ntool_name:「始」OriginLensEngine「末」,\ntext:「始」为什么神经元需要累积足够多的刺激才会放电?「末」\n<<<[END_TOOL_REQUEST]>>>\n\n返回结构:\n- 识别出的硬逻辑名称\n- 硬逻辑的核心定义\n- 跨学科同构案例（神经科学、社会学、日常生活等）\n- 降维打法建议",
+        "example": "<<<[TOOL_REQUEST]>>>\nmaid:「始」Agent01「末」,\ntool_name:「始」OriginLensEngine「末」,\ntext:「始」为什么一个人的改变往往需要很多小事情累积到某个临界点才会突然发生?「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
