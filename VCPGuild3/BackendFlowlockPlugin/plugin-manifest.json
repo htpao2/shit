@@ -1,0 +1,86 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "BackendFlowlockPlugin",
+  "displayName": "后端心流锁服务",
+  "version": "1.0.0",
+  "description": "为任务板任务提供可并发、可持久化、可恢复的后端 Agent 自主循环。每个 Agent 与 taskId 组成独立会话，通过 AgentAssistant 执行单轮工作。",
+  "author": "VCPToolBox",
+  "pluginType": "hybridservice",
+  "entryPoint": {
+    "script": "BackendFlowlockPlugin.js"
+  },
+  "communication": {
+    "protocol": "direct",
+    "timeout": 30000
+  },
+  "configSchema": {
+    "BACKEND_FLOWLOCK_ENABLED": {
+      "type": "boolean",
+      "default": true
+    },
+    "BACKEND_FLOWLOCK_DEFAULT_DELAY_SECONDS": {
+      "type": "integer",
+      "default": 30
+    },
+    "BACKEND_FLOWLOCK_MIN_DELAY_SECONDS": {
+      "type": "integer",
+      "default": 1
+    },
+    "BACKEND_FLOWLOCK_MAX_DELAY_SECONDS": {
+      "type": "integer",
+      "default": 86400
+    },
+    "BACKEND_FLOWLOCK_MAX_RETRIES": {
+      "type": "integer",
+      "default": 3
+    },
+    "BACKEND_FLOWLOCK_MAX_ROUNDS": {
+      "type": "integer",
+      "default": 100
+    },
+    "BACKEND_FLOWLOCK_MAX_CONCURRENT_SESSIONS": {
+      "type": "integer",
+      "default": 20
+    },
+    "BACKEND_FLOWLOCK_MAX_SESSIONS_PER_AGENT": {
+      "type": "integer",
+      "default": 3
+    },
+    "BACKEND_FLOWLOCK_RECOVERY_DELAY_SECONDS": {
+      "type": "integer",
+      "default": 5
+    },
+    "BACKEND_FLOWLOCK_DATA_DIR": {
+      "type": "string",
+      "default": "./data"
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "StartTaskFlowlock",
+        "description": "启动任务后端心流。必需参数: task_id, agent_name。可选参数: assignment_id, prompt, delay_seconds, start_immediately, inject_tools, max_retries, max_rounds。"
+      },
+      {
+        "commandIdentifier": "StopTaskFlowlock",
+        "description": "停止指定任务后端心流。必需参数: task_id, agent_name。可选参数: reason。"
+      },
+      {
+        "commandIdentifier": "GetTaskFlowlock",
+        "description": "获取指定任务后端心流状态。必需参数: task_id, agent_name。"
+      },
+      {
+        "commandIdentifier": "ListTaskFlowlocks",
+        "description": "列出活动任务后端心流。可选参数: agent_name。"
+      },
+      {
+        "commandIdentifier": "ReconcileTaskFlowlocks",
+        "description": "将活动会话与任务板状态进行对账。可选参数 recover=true 时恢复有效的等待会话。"
+      },
+      {
+        "commandIdentifier": "GetBackendFlowlockStatus",
+        "description": "获取后端心流服务状态、并发限制与活动会话摘要。"
+      }
+    ]
+  }
+}
