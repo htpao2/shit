@@ -335,7 +335,7 @@ async function connectDiscord() {
         retryCount = 0;
         connecting = false;
         
-        log('Discord 客户端已连接');
+        console.log('[VCPDiscordBot] Discord Gateway 登录请求已完成，等待 ClientReady。');
     } catch (error) {
         connecting = false;
         lastError = error.message;
@@ -357,7 +357,7 @@ function setupEventHandlers() {
             tag: readyClient.user.tag
         };
         
-        log(`Discord Bot 已登录: ${readyClient.user.tag}`);
+        console.log(`[VCPDiscordBot] Discord Gateway 已就绪: bot=${readyClient.user.tag}, guilds=${readyClient.guilds.cache.size}`);
         updatePlaceholders();
     });
     
@@ -695,7 +695,7 @@ async function initialize(initialConfig = {}, injectedDependencies = {}) {
     }, 60000);
     if (cacheTimer.unref) cacheTimer.unref();
 
-    console.error(
+    console.log(
         `[VCPDiscordBot] 初始化: mode=${pluginManagerRef ? 'vcp-managed' : 'standalone'}, ` +
         `PORT=${config.PORT || 'NOT_FOUND'}, Key=${config.Key ? 'FOUND' : 'NOT_FOUND'}, ` +
         `DiscordToken=${maskSecret(config.DISCORD_BOT_TOKEN)}`
