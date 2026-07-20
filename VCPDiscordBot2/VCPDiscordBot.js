@@ -29,6 +29,7 @@ let readyUser = null;
 let lastConnectedAt = null;
 let lastDisconnectedAt = null;
 let lastError = null;
+let lastAgentDispatchTransport = null;
 
 // 待处理消息队列
 let messageQueue = [];
@@ -188,34 +189,51 @@ async function pokeAgent(message, reason = 'mention') {
     const port = config.PORT;
     const key = config.Key;
     const agentName = config.AgentName || 'AI管家';
-    
-    if (!port || !key) {
-        warn('缺少 VCP PORT 或 Key，无法唤醒 Agent');
-        return;
-    }
-    
     const channelName = message.channel.name || '私信';
-    const payload = `<<<[TOOL_REQUEST]>>>
+    const prompt = `[Discord实时提醒:] ${reason === 'mention' ? `${message.author.username} 在 #${channelName} @ 了你` : `#${channelName} 有新消息`}。消息 ID：${message.id}；频道 ID：${message.channel.id}；消息内容：“${message.content}”。请判断是否需要回复；如需回复，请调用 VCPDiscordBot 的 reply_message，并使用上述消息 ID。`;
+
+    try {
+        if (typeof pluginManagerRef?.processToolCall === 'function') {
+            lastAgentDispatchTransport = 'plugin-manager-direct';
+            await pluginManagerRef.processToolCall('AgentAssistant', {
+                maid: 'VCP系统',
+                agent_name: agentName,
+                prompt,
+                temporary_contact: 'true',
+                inject_tools: 'VCPDiscordBot'
+            });
+        } else {
+            if (!port || !key) {
+                throw new Error('独立测试模式缺少 VCP PORT 或 Key，无法使用 HTTP fallback 唤醒 Agent');
+            }
+            lastAgentDispatchTransport = 'http-fallback';
+            const payload = `<<<[TOOL_REQUEST]>>>
 maid:「始」VCP系统「末」,
 tool_name:「始」AgentAssistant「末」,
 agent_name:「始」${agentName}「末」,
-prompt:「始」[Discord实时提醒:] ${reason === 'mention' ? `${message.author.username} 在 #${channelName} @ 了你` : `#${channelName} 有新消息`}。消息 ID：${message.id}；频道 ID：${message.channel.id}；消息内容：“${message.content}”。请判断是否需要回复；如需回复，请调用 VCPDiscordBot 的 reply_message，并使用上述消息 ID。「末」,
+prompt:「始」${prompt}「末」,
 temporary_contact:「始」true「末」,
+inject_tools:「始」VCPDiscordBot「末」,
 <<<[END_TOOL_REQUEST]>>>`;
-    
-    try {
-        await axios.post(`http://127.0.0.1:${port}/v1/human/tool`, payload, {
-            headers: {
-                'Content-Type': 'text/plain;charset=UTF-8',
-                'Authorization': `Bearer ${key}`
-            },
-            timeout: 10000
-        });
-        
+            await axios.post(`http://127.0.0.1:${port}/v1/human/tool`, payload, {
+                headers: {
+                    'Content-Type': 'text/plain;charset=UTF-8',
+                    'Authorization': `Bearer ${key}`
+                },
+                timeout: normalizeInteger(config.AgentDispatchTimeoutMs, 300000)
+            });
+        }
+
         stats.totalPokes++;
-        log(`成功唤醒 Agent: ${reason}, 消息ID: ${message.id}`);
+        lastError = null;
+        log(`成功唤醒 Agent: transport=${lastAgentDispatchTransport}, reason=${reason}, messageId=${message.id}`);
     } catch (error) {
-        warn('主动唤醒 Agent 失败:', error.message);
+        const detail = error.response?.data
+            ? `${error.message}; response=${JSON.stringify(error.response.data)}`
+            : error.message;
+        lastError = `Agent 唤醒失败 (${lastAgentDispatchTransport || 'unknown'}): ${detail}`;
+        updatePlaceholders();
+        warn(lastError);
     }
 }
 
@@ -267,6 +285,7 @@ function buildStatusPlaceholderText() {
         `- Discord Token：${config.DISCORD_BOT_TOKEN ? 'FOUND' : 'NOT_FOUND'}`,
         `- 最近连接：${lastConnectedAt || '无'}`,
         `- 最近断开：${lastDisconnectedAt || '无'}`,
+        `- Agent 投递链路：${lastAgentDispatchTransport || '尚未触发'}`,
         `- 最近错误：${lastError || '无'}`,
         `- 待处理消息：${messageQueue.length}`,
         `- 总接收/发送/唤醒：${stats.totalReceived}/${stats.totalSent}/${stats.totalPokes}`
@@ -601,6 +620,7 @@ function getStatus() {
         `- 最近连接: ${lastConnectedAt || '从未连接'}`,
         `- 最近断开: ${lastDisconnectedAt || '从未断开'}`,
         `- 重试次数: ${retryCount}`,
+        `- Agent 投递链路: ${lastAgentDispatchTransport || '尚未触发'}`,
         `- 最近错误: ${lastError || '无'}`,
         '',
         '## 消息统计',
@@ -615,7 +635,7 @@ function getStatus() {
         '',
         `- 运行模式: ${pluginManagerRef ? 'VCP 托管 hybridservice' : '独立测试'}`,
         `- VCP PORT: ${config.PORT || 'NOT_FOUND'}`,
-        `- VCP Key: ${config.Key ? 'FOUND' : 'NOT_FOUND'}`,
+        `- VCP Key: ${config.Key ? 'FOUND（仅独立模式 HTTP fallback 使用）' : 'NOT_FOUND'}`,
         `- Discord Token: ${config.DISCORD_BOT_TOKEN ? 'FOUND' : 'NOT_FOUND'}`,
         `- Agent 名称: ${config.AgentName || 'AI管家'}`,
         `- 队列容量: ${config.MaxQueueSize || 1000}`,
@@ -760,6 +780,7 @@ module.exports = {
         loadStandaloneConfig,
         buildStatusPlaceholderText,
         buildDetailedMessageList,
-        updatePlaceholders
+        updatePlaceholders,
+        pokeAgent
     }
 };

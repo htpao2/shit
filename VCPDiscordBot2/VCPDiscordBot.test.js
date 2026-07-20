@@ -28,13 +28,21 @@ async function run() {
     else process.env.VCP_ROOT_CONFIG_PATH = originalRootConfigPath;
 
     const staticPlaceholderValues = new Map();
+    const directCalls = [];
     await plugin.initialize({
         PORT: '6005',
         Key: 'test-key',
         DISCORD_BOT_TOKEN: '',
+        AgentName: 'Nova',
         DebugMode: 'false'
     }, {
-        pluginManager: { staticPlaceholderValues }
+        pluginManager: {
+            staticPlaceholderValues,
+            async processToolCall(name, args) {
+                directCalls.push({ name, args });
+                return { status: 'success' };
+            }
+        }
     });
 
     assert.ok(staticPlaceholderValues.has('{{VCPDiscordBotStatus}}'));
@@ -46,6 +54,22 @@ async function run() {
     assert.match(statusText, /VCP PORT: 6005/);
     assert.match(statusText, /VCP Key: FOUND/);
     assert.match(statusText, /Discord Token: NOT_FOUND/);
+
+    await plugin._private.pokeAgent({
+        id: 'discord-message-1',
+        content: '你好',
+        author: { username: 'tester' },
+        channel: { id: 'discord-channel-1', name: 'general' }
+    }, 'mention');
+    assert.strictEqual(directCalls.length, 1);
+    assert.strictEqual(directCalls[0].name, 'AgentAssistant');
+    assert.strictEqual(directCalls[0].args.agent_name, 'Nova');
+    assert.strictEqual(directCalls[0].args.inject_tools, 'VCPDiscordBot');
+    assert.match(directCalls[0].args.prompt, /discord-message-1/);
+
+    const directStatus = await plugin.processToolCall({ command: 'status' });
+    const directStatusText = directStatus.content.find(part => part.type === 'text')?.text || '';
+    assert.match(directStatusText, /Agent 投递链路: plugin-manager-direct/);
 
     await plugin.processToolCall({ command: 'clear_queue' });
     await plugin.shutdown();

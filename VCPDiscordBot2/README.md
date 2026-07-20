@@ -324,13 +324,19 @@ temporary_contact:「始」true「末」,
 
 ### AI 没有自动回复
 
-**症状**：被 @ 但 AI 没反应
+**症状**：被 @ 后已经触发 AgentAssistant，但日志出现 `API key not valid`。
+
+VCP 根配置里有两个不同用途的 Key：
+
+- `Key`：VCP 本机 HTTP 接口鉴权。托管模式下 Discord 插件改用 PluginManager direct 调用，不依赖它唤醒 Agent。
+- `API_Key`：VCP 调用上游 AI 模型供应商的凭证。`AgentAssistant` 报 `API key not valid` 时，实际需要检查的是它。
 
 **解决方案**：
-1. 检查 `AutoPokeOnMention` 是否为 `true`
-2. 确认 `PORT` 和 `Key` 已被 VCP 正确注入
-3. 查看 VCP 主服务器日志
-4. 手动测试：`curl -X POST http://127.0.0.1:8080/v1/human/tool`
+1. 检查 `AutoPokeOnMention` 是否为 `true`。
+2. 调用 Discord 插件 `status`，确认 `Agent 投递链路` 为 `plugin-manager-direct`。
+3. 检查 VCP 根目录 `config.env` 中的 `API_Key` 与 `API_URL` 是否属于同一个模型服务商或中转服务。
+4. 用 VCP 正常聊天入口测试 Agent `Nova`；如果普通聊天同样报 `API key not valid`，问题与 Discord 插件无关。
+5. 修正 `API_Key` 后重启 VCP，使 AgentAssistant 重新读取模型配置。
 
 ### 消息队列溢出
 
