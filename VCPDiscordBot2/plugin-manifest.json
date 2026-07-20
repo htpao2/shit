@@ -1,0 +1,114 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "VCPDiscordBot",
+  "version": "1.0.0",
+  "displayName": "Discord 实时交互机器人",
+  "description": "基于 Discord.js 的单插件实时交互方案，提供毫秒级消息响应、主动 AI 唤醒和多轮对话能力。",
+  "author": "VCP Team",
+  "pluginType": "hybridservice",
+  "entryPoint": {
+    "type": "nodejs",
+    "script": "VCPDiscordBot.js"
+  },
+  "communication": {
+    "protocol": "direct",
+    "timeout": 300000
+  },
+  "configSchema": {
+    "DISCORD_BOT_TOKEN": {
+      "type": "string",
+      "description": "Discord Bot Token（必需）",
+      "required": true
+    },
+    "AgentName": {
+      "type": "string",
+      "description": "绑定的 Agent 名称",
+      "default": "AI管家"
+    },
+    "ImportantChannels": {
+      "type": "string",
+      "description": "重要频道 ID 列表（逗号分隔），这些频道的消息会主动唤醒 AI",
+      "default": ""
+    },
+    "MaxQueueSize": {
+      "type": "integer",
+      "description": "消息队列最大容量",
+      "default": 1000
+    },
+    "FoldOutputInterval": {
+      "type": "integer",
+      "description": "动态占位符刷新间隔（毫秒）",
+      "default": 10000
+    },
+    "AutoPokeOnMention": {
+      "type": "boolean",
+      "description": "被 @ 时自动唤醒 AI",
+      "default": true
+    },
+    "AutoPokeOnImportantChannel": {
+      "type": "boolean",
+      "description": "重要频道消息自动唤醒 AI",
+      "default": true
+    },
+    "DebugMode": {
+      "type": "boolean",
+      "description": "启用调试模式",
+      "default": false
+    }
+  },
+  "capabilities": {
+    "systemPromptPlaceholders": [
+      {
+        "placeholder": "{{VCPDiscordBotStatus}}",
+        "description": "Discord Bot Gateway 连接状态、配置注入状态、消息统计与最近错误。",
+        "isDynamic": true
+      },
+      {
+        "placeholder": "{{VCPDiscordRecentMessages}}",
+        "description": "Discord 最近收到的频道消息、私信、提及与待处理消息摘要。",
+        "isDynamic": true
+      }
+    ],
+    "invocationCommands": [
+      {
+        "commandIdentifier": "send_message",
+        "description": "向指定的 Discord 频道发送消息。\n参数:\n- channelId (字符串, 必需): 目标频道的 ID。\n- content (字符串, 必需): 要发送的消息内容。\n- imageUrl (字符串, 可选): 图片 URL，如果提供则会作为附件发送。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPDiscordBot「末」,\ncommand:「始」send_message「末」,\nchannelId:「始」123456789「末」,\ncontent:「始」Hello Discord!「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPDiscordBot「末」,\ncommand:「始」send_message「末」,\nchannelId:「始」123456789「末」,\ncontent:「始」这是一条测试消息「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "reply_message",
+        "description": "回复指定的 Discord 消息。\n参数:\n- messageId (字符串, 必需): 要回复的消息 ID（从折叠协议面板中获取）。\n- content (字符串, 必需): 回复内容。\n- imageUrl (字符串, 可选): 图片 URL。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPDiscordBot「末」,\ncommand:「始」reply_message「末」,\nmessageId:「始」987654321「末」,\ncontent:「始」收到！我会处理这个问题。「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPDiscordBot「末」,\ncommand:「始」reply_message「末」,\nmessageId:「始」987654321「末」,\ncontent:「始」好的，已经记录了你的反馈。「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "list_channels",
+        "description": "列出所有可用的 Discord 频道。\n参数: 无\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPDiscordBot「末」,\ncommand:「始」list_channels「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPDiscordBot「末」,\ncommand:「始」list_channels「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "clear_queue",
+        "description": "清空当前的消息队列。当你觉得未读消息不再需要处理时使用。\n参数: 无\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPDiscordBot「末」,\ncommand:「始」clear_queue「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPDiscordBot「末」,\ncommand:「始」clear_queue「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "status",
+        "description": "查看插件当前状态，包括连接状态、消息统计等。\n参数: 无\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPDiscordBot「末」,\ncommand:「始」status「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPDiscordBot「末」,\ncommand:「始」status「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ],
+    "services": [
+      {
+        "serviceName": "DiscordGatewayListener",
+        "description": "常驻连接 Discord Gateway，实时监听频道消息、私信与 @ 提及。"
+      },
+      {
+        "serviceName": "DiscordAgentDispatch",
+        "description": "收到符合规则的 Discord 消息后，通过 VCP 本机接口主动联系绑定 Agent。"
+      },
+      {
+        "serviceName": "DiscordDynamicContext",
+        "description": "持续更新 {{VCPDiscordBotStatus}} 与 {{VCPDiscordRecentMessages}} 动态占位符。"
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "lastUpdate": "2026-07-20T07:51:57.537Z",
+  "messageQueue": [],
+  "stats": {
+    "totalReceived": 0,
+    "totalSent": 0,
+    "totalPokes": 0,
+    "startTime": 1784533807389
+  },
+  "lastError": "缺少 DISCORD_BOT_TOKEN，插件不会连接 Discord Gateway"
+}
