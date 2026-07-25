@@ -1,0 +1,92 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "AICodeWorker",
+  "version": "2.0.0",
+  "displayName": "Snow AI 代码工程 Worker",
+  "description": "通过每任务独立 Snow CLI SSE 实例，让 VCP Agent 安全调度 Snow 主 Agent 完成代码分析、补丁建议与文件修改，并支持会话续聊和待答问题回传。",
+  "author": "Local",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node AICodeWorker.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 1200000
+  },
+  "configSchema": {
+    "SNOW_BIN": {
+      "type": "string",
+      "default": "snow",
+      "description": "Snow CLI 可执行文件路径"
+    },
+    "SNOW_BIN_ARGS": {
+      "type": "string",
+      "default": "[]",
+      "description": "传给 Snow 可执行文件的固定前置参数，JSON 字符串数组；通常留空"
+    },
+    "ALLOWED_PROJECT_ROOTS": {
+      "type": "string",
+      "default": "/app/VCPToolBox_new",
+      "description": "允许 Snow 操作的项目根目录白名单，多个路径用逗号分隔"
+    },
+    "JOB_ROOT": {
+      "type": "string",
+      "default": "",
+      "description": "job 元数据、转录与日志目录；留空时使用插件目录下 jobs"
+    },
+    "DEFAULT_TIMEOUT_SEC": {
+      "type": "integer",
+      "default": 900
+    },
+    "SNOW_STARTUP_TIMEOUT_SEC": {
+      "type": "integer",
+      "default": 45
+    },
+    "SNOW_INTERACTION_TIMEOUT_MS": {
+      "type": "integer",
+      "default": 300000
+    },
+    "SNOW_SSE_PORT_MIN": {
+      "type": "integer",
+      "default": 32100
+    },
+    "SNOW_SSE_PORT_MAX": {
+      "type": "integer",
+      "default": 32999
+    },
+    "MAX_TASK_CHARS": {
+      "type": "integer",
+      "default": 20000
+    },
+    "MAX_CONCURRENT_JOBS": {
+      "type": "integer",
+      "default": 1,
+      "description": "Snow Agent 全局并发硬上限，默认 1"
+    },
+    "JOB_RETAIN_DAYS": {
+      "type": "integer",
+      "default": 7
+    },
+    "FULL_TRANSCRIPT_MAX_CHARS": {
+      "type": "integer",
+      "default": 100000
+    },
+    "REDACT_SECRETS": {
+      "type": "boolean",
+      "default": true
+    },
+    "PROJECT_CONTEXT": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "AICodeWorker",
+        "description": "## AICodeWorker v2 — 调度 Snow CLI 主 Agent\n\n插件通过每个 job 独立的 Snow SSE 实例执行任务。默认自动批准非敏感工具；敏感工具一律拒绝并记录 warning；Snow 向用户提问时，当前轮次安全结束并返回 waiting_for_answer、sessionId、问题和一次性 resumeToken。\n\n### 首选：同步等待\n```\ncommand:「始」run_and_wait「末」,\nprojectPath:「始」/项目绝对路径「末」,\ntask:「始」明确任务描述「末」,\nmode:「始」analyze|patch|write「末」\n```\n也可使用 preset=index|read|scan|bug|set|append|create，并提供 targetPath 及该 preset 所需参数。\n\n### 异步任务\n- run：立即返回 jobId。\n- query：传 jobId；默认返回摘要，detail=full 时附受限长度的完整事件转录。\n- listJobs：可选 limit。\n- cancel：传运行中的 jobId。\n\n### 回答 Snow 的问题\n当 state=waiting_for_answer 时，读取 pendingQuestion.question/options/resumeToken，然后调用：\n```\ncommand:「始」answer「末」,\nresumeToken:「始」返回的一次性令牌「末」,\nanswer:「始」用户答案「末」\n```\n可选 selectedOptions（数组）、customInput、timeoutSec、detail；answer 默认等待新一轮完成，wait=false 时立即返回新 jobId。resumeToken 只能成功消费一次。\n\n### 普通会话续聊\n调用 run 或 run_and_wait 时传上次返回的 sessionId，即可在同一 Snow 会话中继续，不需要 resumeToken。\n\n### 默认返回字段\njobId、state、sessionId、summary、finalResponse、fileChanges、toolStats、usage、warnings、error。完整过程仅在 query/detail=full 返回。\n\n状态：running / completed / waiting_for_answer / failed / timeout / cancelled。"
+      }
+    ]
+  }
+}
