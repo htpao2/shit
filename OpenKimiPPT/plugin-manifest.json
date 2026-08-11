@@ -1,0 +1,83 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "OpenKimiPPT",
+  "version": "1.0.0",
+  "displayName": "Open Kimi PPT",
+  "description": "创建、读取、编辑、校验和导出 PPTD/PPTX 项目的 VCP 工具插件。Agent 负责内容策划与版式生成，插件负责受控文件操作、结构检查、图片/PPTX 导出及本地编辑器管理。",
+  "author": "Open Kimi PPT contributors",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node plugin.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 1800000
+  },
+  "configSchema": {
+    "PPT_WORKSPACE_ROOT": {
+      "type": "string",
+      "description": "允许插件创建和操作 PPT 项目的工作根目录。所有 projectPath 均相对此目录解析。",
+      "default": "./workspace"
+    },
+    "PPT_MAX_MEDIA_MB": {
+      "type": "number",
+      "description": "单个导入媒体文件允许的最大体积，单位 MB。",
+      "default": 50
+    },
+    "PPT_EDITOR_PORT": {
+      "type": "number",
+      "description": "本地 PPTD 编辑器默认监听端口。",
+      "default": 55173
+    },
+    "PPT_PYTHON_COMMAND": {
+      "type": "string",
+      "description": "运行导出脚本的 Python 命令；Windows 通常为 python，macOS/Linux 通常为 python3。",
+      "default": "python"
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "CheckEnvironment",
+        "description": "检查 Open Kimi PPT 运行环境与资源路径。参数：command=CheckEnvironment。返回 Node.js、npm、Python、导出脚本和编辑器资源状态。"
+      },
+      {
+        "commandIdentifier": "ProjectManagement",
+        "description": "管理 PPTD 项目。支持 command=CreateProject|ListProjects|GetProjectInfo。CreateProject 参数：projectPath(必需，相对工作根目录)、title(可选)、width/height(可选，默认 1920x1080)、overwrite(可选)。ListProjects 无额外参数。GetProjectInfo 参数：projectPath。创建后会生成自包含的 .pptd、pages/、media/ 结构。"
+      },
+      {
+        "commandIdentifier": "PptdContent",
+        "description": "读取或写入 PPTD 清单和页面。支持 command=ReadManifest|WriteManifest|ListPages|ReadPage|WritePage。共同参数 projectPath；WriteManifest 另需 content，WritePage 另需 pagePath 与 content；ReadPage 需 pagePath；写入可传 overwrite=true。pagePath 必须是项目内 pages/ 下的 .page 文件。Agent 写入前应先阅读 ReadReference 返回的 PPTD 规范。"
+      },
+      {
+        "commandIdentifier": "Reference",
+        "description": "读取随插件提供的制作规范。command=ReadReference。可传 reference：skill|pptd|slides_categories|themes|fonts|shapes；也可传 referencePath 读取 reference/ 内具体 .md 文件，例如 slides_categories/tech-engineering.md 或 design_system/consulting/pine-green-strategy/design.md。制作前至少读取 pptd 与 slides_categories，再根据场景/主题继续读取具体文件。"
+      },
+      {
+        "commandIdentifier": "Media",
+        "description": "管理项目媒体。支持 command=ListMedia|ImportMedia。共同参数 projectPath。ImportMedia 参数：fileName(必需，写入 media/)、sourcePath 或 data(二选一)；data 可为 Base64 或 Data URI；overwrite 可选。sourcePath 可为本地路径或 file:// URL，受大小和类型限制。"
+      },
+      {
+        "commandIdentifier": "ValidateProject",
+        "description": "校验 PPTD 项目结构。参数：command=ValidateProject, projectPath。检查唯一清单、页面引用、相对路径安全、资源存在性、页面基础字段和画布边界，返回 errors、warnings 与项目摘要。导出前必须调用并修复 errors。"
+      },
+      {
+        "commandIdentifier": "ExportImages",
+        "description": "将 PPTD 导出为逐页图片和总览图，用于视觉质检。参数：command=ExportImages, projectPath；可选 outputPath(项目内相对路径，默认 .qa-images)、force。该命令可能运行数分钟，需要 Chromium、网络和 agent-browser。成功后读取 overviewPath 检查遮挡、溢出、对比度和排版。"
+      },
+      {
+        "commandIdentifier": "ExportPptx",
+        "description": "将 PPTD 导出为可编辑 PPTX。参数：command=ExportPptx, projectPath；可选 outputPath(项目内 .pptx，默认与清单同名)、force、transition(fade|none，默认 fade)、embedFonts(默认 true)。应在 ValidateProject 无 errors 且图片质检通过后调用。"
+      },
+      {
+        "commandIdentifier": "Editor",
+        "description": "管理本地 PPTD 编辑器后台服务。支持 command=StartEditor|EditorStatus|StopEditor。StartEditor 可传 port 和 openBrowser，立即返回本地 URL；EditorStatus 返回 PID、端口与运行状态；StopEditor 停止由本插件启动的服务。编辑器是持续服务，不使用异步结果回调。"
+      },
+      {
+        "commandIdentifier": "Workflow",
+        "description": "推荐工作流：1) CheckEnvironment；2) ReadReference(pptd/slides_categories)；3) CreateProject；4) WriteManifest 和逐页 WritePage；5) ImportMedia；6) ValidateProject 并修复；7) ExportImages 做视觉质检；8) ExportPptx；9) 按需 StartEditor。调用格式示例：\n<<<[TOOL_REQUEST]>>>\nmaid:「始」Agent署名「末」,\ntool_name:「始」OpenKimiPPT「末」,\ncommand:「始」CreateProject「末」,\nprojectPath:「始」my-deck「末」,\ntitle:「始」项目汇报「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
