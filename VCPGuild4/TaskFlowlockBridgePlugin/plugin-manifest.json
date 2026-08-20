@@ -1,0 +1,66 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "TaskFlowlockBridgePlugin",
+  "displayName": "任务心流桥接服务",
+  "version": "1.0.0",
+  "description": "连接 TaskBoard 与 AgentAssistant 官方 Flowlock 委托。仅管理任务所有权、delegationId 映射、持久化、对账与重派，不实现独立心跳或协议解析。",
+  "author": "VCPToolBox",
+  "pluginType": "hybridservice",
+  "entryPoint": {
+    "script": "TaskFlowlockBridgePlugin.js"
+  },
+  "communication": {
+    "protocol": "direct",
+    "timeout": 30000
+  },
+  "configSchema": {
+    "TASK_FLOWLOCK_BRIDGE_ENABLED": {
+      "type": "boolean",
+      "default": true
+    },
+    "TASK_FLOWLOCK_RECONCILE_INTERVAL_SECONDS": {
+      "type": "integer",
+      "default": 30
+    },
+    "TASK_FLOWLOCK_RECOVERY_DELAY_SECONDS": {
+      "type": "integer",
+      "default": 5
+    },
+    "TASK_FLOWLOCK_MAX_REDISPATCHES": {
+      "type": "integer",
+      "default": 2
+    },
+    "TASK_FLOWLOCK_DATA_DIR": {
+      "type": "string",
+      "default": "./data"
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "StartTaskFlowlock",
+        "description": "为已接取的 TaskBoard 任务启动官方 AgentAssistant Flowlock 委托。必需参数: task_id, agent_name。可选参数: assignment_id, prompt。"
+      },
+      {
+        "commandIdentifier": "StopTaskFlowlock",
+        "description": "取消任务对应的 AgentAssistant 委托并终止桥接映射。必需参数: task_id, agent_name。可选参数: reason。"
+      },
+      {
+        "commandIdentifier": "GetTaskFlowlock",
+        "description": "获取指定任务的桥接状态和 AgentAssistant delegationId。必需参数: task_id, agent_name。"
+      },
+      {
+        "commandIdentifier": "ListTaskFlowlocks",
+        "description": "列出活动任务心流映射。可选参数: agent_name。"
+      },
+      {
+        "commandIdentifier": "ReconcileTaskFlowlocks",
+        "description": "对账 TaskBoard 与 AgentAssistant 委托。可选参数 allow_redispatch，默认 true。"
+      },
+      {
+        "commandIdentifier": "GetTaskFlowlockBridgeStatus",
+        "description": "返回桥接服务状态、活动映射和官方 AA 并发语义。"
+      }
+    ]
+  }
+}

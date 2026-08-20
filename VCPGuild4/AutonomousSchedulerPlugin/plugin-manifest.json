@@ -1,0 +1,49 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "AutonomousSchedulerPlugin",
+  "displayName": "自主Agent调度器",
+  "version": "1.1.0",
+  "description": "自主Agent任务调度插件。定期检查 TaskBoard，原子接取并匹配 Agent，再通过 TaskFlowlockBridgePlugin 提交给 AgentAssistant 官方 Flowlock 异步委托。调度器不实现独立心跳内核。",
+  "author": "VCPToolBox",
+  "pluginType": "hybridservice",
+  "entryPoint": {
+    "script": "AutonomousSchedulerPlugin.js"
+  },
+  "communication": {
+    "protocol": "direct"
+  },
+  "configSchema": {
+    "AUTONOMOUS_SCHEDULE_INTERVAL_MINUTES": "integer",
+    "AUTONOMOUS_IDLE_PROBABILITY": "number",
+    "AUTONOMOUS_SCHEDULER_ENABLED": "boolean"
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "CheckTaskBoard",
+        "description": "[AutonomousSchedulerPlugin]手动触发检查任务板。通常此插件会自动定期检查，但你也可以使用此命令手动触发一次检查。\n\n使用格式：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」AutonomousSchedulerPlugin「末」,\ncommand:「始」CheckTaskBoard「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」AutonomousSchedulerPlugin「末」,\ncommand:「始」CheckTaskBoard「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GetSchedulerStatus",
+        "description": "[AutonomousSchedulerPlugin]获取调度器当前状态，包括是否启用、检查间隔、上次检查时间等。\n\n使用格式：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」AutonomousSchedulerPlugin「末」,\ncommand:「始」GetSchedulerStatus「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」AutonomousSchedulerPlugin「末」,\ncommand:「始」GetSchedulerStatus「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "SetSchedulerEnabled",
+        "description": "[AutonomousSchedulerPlugin]启用或禁用自动调度。\n\n参数：\n- enabled: true 或 false\n\n使用格式：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」AutonomousSchedulerPlugin「末」,\ncommand:「始」SetSchedulerEnabled「末」,\nenabled:「始」true「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」AutonomousSchedulerPlugin「末」,\ncommand:「始」SetSchedulerEnabled「末」,\nenabled:「始」true「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "WakeAgent",
+        "description": "[AutonomousSchedulerPlugin]为指定 Agent 当前进行中的任务幂等启动或查询官方 AA Flowlock 委托。系统读取任务日记，通过 TaskFlowlockBridgePlugin 建立 taskId 与 delegationId 映射；同一 Agent 的多个委托可能在 AA 内串行排队。\n\n参数：\n- agent_name: Agent的名称（如 '小克', '小娜' 等）\n\n使用格式：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」AutonomousSchedulerPlugin「末」,\ncommand:「始」WakeAgent「末」,\nagent_name:「始」小克「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」AutonomousSchedulerPlugin「末」,\ncommand:「始」WakeAgent「末」,\nagent_name:「始」小克「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GetAgentTask",
+        "description": "[AutonomousSchedulerPlugin]获取指定 Agent 当前任务、任务日记以及 TaskFlowlockBridge 映射状态，包括 delegationId、排队/运行/orphaned 状态和重派信息。\n\n参数：\n- agent_name: Agent的名称\n\n使用格式：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」AutonomousSchedulerPlugin「末」,\ncommand:「始」GetAgentTask「末」,\nagent_name:「始」小克「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」AutonomousSchedulerPlugin「末」,\ncommand:「始」GetAgentTask「末」,\nagent_name:「始」小克「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
