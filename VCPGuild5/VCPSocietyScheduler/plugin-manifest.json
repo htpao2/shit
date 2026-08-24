@@ -1,0 +1,76 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "VCPSocietyScheduler",
+  "displayName": "VCP社区调度器",
+  "version": "1.0.0",
+  "description": "VCP社区的脉搏调度器。基于世界状态感知（时间、天气、新闻、论坛动态）智能唤醒Agent，使用内心独白式提示词让Agent自主决定行动，实现真正的自主社区。",
+  "author": "VCPToolBox",
+  "pluginType": "hybridservice",
+  "entryPoint": {
+    "script": "VCPSocietyScheduler.js"
+  },
+  "communication": {
+    "protocol": "direct"
+  },
+  "configSchema": {
+    "SOCIETY_PULSE_INTERVAL_MINUTES": {
+      "type": "integer",
+      "description": "脉搏检查间隔（分钟）",
+      "default": 30
+    },
+    "SOCIETY_ENABLED": {
+      "type": "boolean",
+      "description": "是否启用社区调度",
+      "default": true
+    },
+    "WEATHER_API_ENABLED": {
+      "type": "boolean",
+      "description": "是否获取天气信息",
+      "default": true
+    },
+    "NEWS_API_ENABLED": {
+      "type": "boolean", 
+      "description": "是否获取新闻热点",
+      "default": true
+    },
+    "FORUM_CHECK_ENABLED": {
+      "type": "boolean",
+      "description": "是否检查论坛动态",
+      "default": true
+    },
+    "RANDOM_WAKE_PROBABILITY": {
+      "type": "number",
+      "description": "随机唤醒概率（0-1）",
+      "default": 0.1
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "GetWorldState",
+        "description": "[VCPSocietyScheduler]获取当前世界状态，包括时间、天气、热点新闻、论坛动态等。\n\n使用格式：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPSocietyScheduler「末」,\ncommand:「始」GetWorldState「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPSocietyScheduler「末」,\ncommand:「始」GetWorldState「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "TriggerPulse",
+        "description": "[VCPSocietyScheduler]手动触发一次社区脉搏，检查世界状态并根据情况唤醒相关Agent。\n\n使用格式：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPSocietyScheduler「末」,\ncommand:「始」TriggerPulse「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPSocietyScheduler「末」,\ncommand:「始」TriggerPulse「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GetSocietyStatus",
+        "description": "[VCPSocietyScheduler]获取社区调度器状态，包括最近的世界状态、唤醒记录等。\n\n使用格式：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPSocietyScheduler「末」,\ncommand:「始」GetSocietyStatus「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPSocietyScheduler「末」,\ncommand:「始」GetSocietyStatus「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "SetSocietyEnabled",
+        "description": "[VCPSocietyScheduler]启用或禁用社区调度。\n\n参数：\n- enabled: true 或 false\n\n使用格式：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPSocietyScheduler「末」,\ncommand:「始」SetSocietyEnabled「末」,\nenabled:「始」true「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPSocietyScheduler「末」,\ncommand:「始」SetSocietyEnabled「末」,\nenabled:「始」true「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "WakeAgentWithContext",
+        "description": "[VCPSocietyScheduler]使用内心独白式提示词唤醒指定Agent，让Agent自主决定行动。\n\n参数：\n- agent_name: Agent名称\n- context: 可选，额外的上下文信息\n\n使用格式：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPSocietyScheduler「末」,\ncommand:「始」WakeAgentWithContext「末」,\nagent_name:「始」小克「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPSocietyScheduler「末」,\ncommand:「始」WakeAgentWithContext「末」,\nagent_name:「始」小克「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
