@@ -48,6 +48,15 @@ async function run() {
     assert.ok(staticPlaceholderValues.has('{{VCPDiscordBotStatus}}'));
     assert.ok(staticPlaceholderValues.has('{{VCPDiscordRecentMessages}}'));
 
+    const history = [
+        { id: 'h1', author: 'tester', isBot: false, content: '前一条消息', timestamp: Date.now() - 2000 },
+        { id: 'h2', author: 'VCPBot', isBot: true, content: 'Bot之前的回复', timestamp: Date.now() - 1000 }
+    ];
+    const historyText = plugin._private.formatChannelHistory(history);
+    assert.match(historyText, /用户 tester/);
+    assert.match(historyText, /Bot VCPBot/);
+    assert.match(historyText, /Bot之前的回复/);
+
     const status = await plugin.processToolCall({ command: 'status' });
     const statusText = status.content.find(part => part.type === 'text')?.text || '';
     assert.match(statusText, /VCP 托管 hybridservice/);
@@ -66,6 +75,36 @@ async function run() {
     assert.strictEqual(directCalls[0].args.agent_name, 'Nova');
     assert.strictEqual(directCalls[0].args.inject_tools, 'VCPDiscordBot');
     assert.match(directCalls[0].args.prompt, /discord-message-1/);
+    assert.match(directCalls[0].args.prompt, /当前频道最近 20 条消息/);
+
+    const oldReferencedMessage = {
+        id: 'discord-old-message',
+        content: '这是 20 条以前的原始消息',
+        author: { username: 'older-user', bot: false },
+        createdTimestamp: Date.now() - 100000
+    };
+    await plugin._private.pokeAgent({
+        id: 'discord-reply-message',
+        content: '我回复这条旧消息',
+        reference: { messageId: oldReferencedMessage.id },
+        author: { username: 'tester' },
+        channel: {
+            id: 'discord-channel-2',
+            name: 'general',
+            messages: {
+                async fetch(messageId) {
+                    assert.strictEqual(messageId, oldReferencedMessage.id);
+                    return oldReferencedMessage;
+                }
+            }
+        }
+    }, 'mention');
+    assert.strictEqual(directCalls.length, 2);
+    assert.match(
+        directCalls[1].args.prompt,
+        /本次消息明确回复的消息（即使早于最近 20 条也必须参考）/
+    );
+    assert.match(directCalls[1].args.prompt, /这是 20 条以前的原始消息/);
 
     const directStatus = await plugin.processToolCall({ command: 'status' });
     const directStatusText = directStatus.content.find(part => part.type === 'text')?.text || '';

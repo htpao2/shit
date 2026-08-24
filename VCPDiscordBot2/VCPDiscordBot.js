@@ -31,8 +31,11 @@ let lastDisconnectedAt = null;
 let lastError = null;
 let lastAgentDispatchTransport = null;
 
-// 待处理消息队列
+// 待处理消息队列与频道上下文缓存
 let messageQueue = [];
+let channelHistoryCache = new Map();
+const CHANNEL_HISTORY_LIMIT = 20;
+const MAX_CONTEXT_CHARS = 24000;
 
 // 统计数据
 let stats = {
@@ -110,6 +113,7 @@ async function saveCache() {
         const cacheData = {
             lastUpdate: new Date().toISOString(),
             messageQueue,
+            channelHistoryCache: Object.fromEntries(channelHistoryCache),
             stats,
             lastError
         };
@@ -128,6 +132,9 @@ async function loadCache() {
         if (fs.existsSync(cachePath)) {
             const data = JSON.parse(await fsp.readFile(cachePath, 'utf8'));
             if (data.messageQueue) messageQueue = data.messageQueue;
+            if (data.channelHistoryCache && typeof data.channelHistoryCache === 'object') {
+                channelHistoryCache = new Map(Object.entries(data.channelHistoryCache));
+            }
             if (data.stats) stats = { ...stats, ...data.stats };
             log('已加载缓存数据');
         }
@@ -181,6 +188,86 @@ function getMessageFromQueue(messageId) {
     return messageQueue.find(msg => msg.id === messageId);
 }
 
+function normalizeHistoryMessage(message) {
+    return {
+        id: String(message.id || ''),
+        author: message.author?.username || message.author || 'unknown',
+        authorId: message.author?.id || message.authorId || '',
+        isBot: Boolean(message.author?.bot || message.isBot),
+        content: String(message.content || '').trim(),
+        timestamp: message.createdTimestamp || message.timestamp || Date.now(),
+        channelId: String(message.channelId || message.channel?.id || '')
+    };
+}
+
+function mergeChannelHistory(channelId, messages) {
+    const key = String(channelId);
+    const previous = channelHistoryCache.get(key) || [];
+    const merged = new Map(previous.map(item => [String(item.id), item]));
+    for (const message of messages || []) {
+        const normalized = normalizeHistoryMessage(message);
+        if (normalized.id && normalized.content) merged.set(normalized.id, normalized);
+    }
+    const result = Array.from(merged.values())
+        .sort((a, b) => Number(a.timestamp) - Number(b.timestamp))
+        .slice(-CHANNEL_HISTORY_LIMIT);
+    channelHistoryCache.set(key, result);
+    return result;
+}
+
+async function fetchChannelHistory(channelId) {
+    const cached = channelHistoryCache.get(String(channelId)) || [];
+    if (!client || !client.isReady()) return cached;
+    try {
+        const channel = await client.channels.fetch(channelId);
+        if (!channel?.messages?.fetch) return cached;
+        const fetched = await channel.messages.fetch({ limit: CHANNEL_HISTORY_LIMIT });
+        return mergeChannelHistory(channelId, Array.from(fetched.values()));
+    } catch (error) {
+        log(`读取 Discord 频道历史失败，使用缓存: channel=${channelId}, error=${error.message}`);
+        return cached;
+    }
+}
+
+async function fetchReferencedMessage(message) {
+    const referencedId = message.reference?.messageId;
+    if (!referencedId) return null;
+
+    try {
+        const channel = message.channel?.messages?.fetch
+            ? message.channel
+            : await client?.channels?.fetch(message.channel?.id);
+        if (!channel?.messages?.fetch) return null;
+        return await channel.messages.fetch(referencedId);
+    } catch (error) {
+        log(`读取被引用 Discord 消息失败: messageId=${referencedId}, error=${error.message}`);
+        return null;
+    }
+}
+
+function formatChannelHistory(history) {
+    const lines = history.map((item, index) => {
+        const time = new Date(item.timestamp).toLocaleString('zh-CN');
+        const role = item.isBot ? 'Bot' : '用户';
+        return `${index + 1}. [${time}] ${role} ${item.author} (messageId=${item.id}): ${item.content}`;
+    });
+    const text = lines.join('\n');
+    return text.length > MAX_CONTEXT_CHARS ? text.slice(-MAX_CONTEXT_CHARS) : text;
+}
+
+function rememberBotMessage(channelId, messageId, content) {
+    if (!channelId || !messageId || !content) return;
+    mergeChannelHistory(channelId, [{
+        id: messageId,
+        author: readyUser?.username || 'VCPDiscordBot',
+        authorId: readyUser?.id || '',
+        isBot: true,
+        content,
+        timestamp: Date.now(),
+        channelId
+    }]);
+}
+
 // ============================================
 // AI 主动唤醒功能（核心创新）
 // ============================================
@@ -190,7 +277,27 @@ async function pokeAgent(message, reason = 'mention') {
     const key = config.Key;
     const agentName = config.AgentName || 'AI管家';
     const channelName = message.channel.name || '私信';
-    const prompt = `[Discord实时提醒:] ${reason === 'mention' ? `${message.author.username} 在 #${channelName} @ 了你` : `#${channelName} 有新消息`}。消息 ID：${message.id}；频道 ID：${message.channel.id}；消息内容：“${message.content}”。请判断是否需要回复；如需回复，请调用 VCPDiscordBot 的 reply_message，并使用上述消息 ID。`;
+    mergeChannelHistory(message.channel.id, [message]);
+    let history = await fetchChannelHistory(message.channel.id);
+    const referencedMessage = await fetchReferencedMessage(message);
+    if (referencedMessage) {
+        history = mergeChannelHistory(message.channel.id, [...history, referencedMessage]);
+    }
+    const historyText = formatChannelHistory(history) || '(当前频道暂无可读取的历史消息)';
+    const referencedText = referencedMessage
+        ? `\n\n【本次消息明确回复的消息（即使早于最近 ${CHANNEL_HISTORY_LIMIT} 条也必须参考）】\n${formatChannelHistory([referencedMessage])}`
+        : '';
+    const prompt = `[Discord实时提醒:] ${reason === 'mention' ? `${message.author.username} 在 #${channelName} @ 了你` : `#${channelName} 有新消息`}。
+
+【当前消息】
+消息 ID：${message.id}
+频道 ID：${message.channel.id}
+消息内容：“${message.content}”${referencedText}
+
+【当前频道最近 ${CHANNEL_HISTORY_LIMIT} 条消息】
+${historyText}
+
+请基于以上频道上下文判断是否需要回复；如果当前消息是对某条历史消息的回复，优先结合“本次消息明确回复的消息”理解语义。如需回复，请调用 VCPDiscordBot 的 reply_message，使用当前消息 ID ${message.id}，不要只输出文字回复。`;
 
     try {
         if (typeof pluginManagerRef?.processToolCall === 'function') {
@@ -495,6 +602,7 @@ async function sendMessage(params) {
     
     const sentMessage = await channel.send(messageOptions);
     stats.totalSent++;
+    rememberBotMessage(channelId, sentMessage.id, content || '(图片)');
     updatePlaceholders();
     saveCache().catch(error => warn('发送消息后保存缓存失败:', error.message));
 
@@ -550,6 +658,7 @@ async function replyMessage(params) {
     
     const sentMessage = await originalMessage.reply(messageOptions);
     stats.totalSent++;
+    rememberBotMessage(queuedMsg.channelId, sentMessage.id, content || '(图片)');
 
     // 从队列中移除已回复的消息
     removeFromQueue(messageId);
@@ -781,6 +890,8 @@ module.exports = {
         buildStatusPlaceholderText,
         buildDetailedMessageList,
         updatePlaceholders,
-        pokeAgent
+        pokeAgent,
+        fetchChannelHistory,
+        formatChannelHistory
     }
 };
