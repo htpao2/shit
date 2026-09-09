@@ -171,7 +171,7 @@ Snow 主 Agent 使用 ask-user 工具时，插件不会让任务悬挂：
 
 ```text
 <<<[TOOL_REQUEST]>>>
-tool_name:「始」AICodeWorker「末」,
+tool_name:「始」SnowAICodeWorker「末」,
 command:「始」answer「末」,
 resumeToken:「始」resume_...「末」,
 answer:「始」使用 SQLite，并保持零额外服务依赖。「末」,
