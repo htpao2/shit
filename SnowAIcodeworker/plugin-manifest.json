@@ -1,6 +1,6 @@
 {
   "manifestVersion": "1.0.0",
-  "name": "AICodeWorker",
+  "name": "SnowAICodeWorker",
   "version": "2.0.0",
   "displayName": "Snow AI 代码工程 Worker",
   "description": "通过每任务独立 Snow CLI SSE 实例，让 VCP Agent 安全调度 Snow 主 Agent 完成代码分析、补丁建议与文件修改，并支持会话续聊和待答问题回传。",
