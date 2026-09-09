@@ -37,7 +37,7 @@ Snow 自身仍读取 `~/.snow` 与项目 `.snow` 配置。插件不会写 API Ke
 
 ```text
 <<<[TOOL_REQUEST]>>>
-tool_name:「始」AICodeWorker「末」,
+tool_name:「始」SnowAICodeWorker「末」,
 command:「始」run_and_wait「末」,
 projectPath:「始」/app/myproject「末」,
 task:「始」分析 src/auth.ts 的错误处理，指出根因，不修改文件。「末」,
