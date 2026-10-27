@@ -4,16 +4,42 @@
 
 const fs = require('fs');
 const path = require('path');
-const dotenv = require('dotenv');
+
+let dotenv;
+try {
+    dotenv = require('dotenv');
+} catch (error) {
+    // 真实 VCP 通常会提供 dotenv；最小插件测试环境没有依赖时使用兼容解析器。
+    dotenv = { parse: parseDotenvFallback };
+}
+
+function parseDotenvFallback(content) {
+    const parsed = {};
+    for (const rawLine of String(content || '').split(/\r?\n/)) {
+        const line = rawLine.trim();
+        if (!line || line.startsWith('#')) continue;
+        const separator = line.indexOf('=');
+        if (separator <= 0) continue;
+        const key = line.slice(0, separator).trim();
+        let value = line.slice(separator + 1).trim();
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+            value = value.slice(1, -1);
+        }
+        parsed[key] = value;
+    }
+    return parsed;
+}
 
 // --- State and Config Variables ---
 let DEBUG_MODE = false;
 let SCHEDULE_INTERVAL_MINUTES = 5;  // 检查间隔（分钟）
-let IDLE_PROBABILITY = 0.2;         // 空闲时随机检查概率
+let IDLE_PROBABILITY = 0.2;         // 空闲维护概率；不影响进行中任务续跑
 let SCHEDULER_ENABLED = true;       // 是否启用自动调度
 let DEFAULT_AGENT_NAME = '小娜';    // 默认Agent
 
 let schedulerInterval = null;
+let schedulerStartupTimeout = null;
+let schedulerCheckRunning = false;
 let lastCheckTime = null;
 let lastCheckResult = null;
 let pluginManagerRef = null;
@@ -33,13 +59,13 @@ const TASK_DIARY_MAX_LINES = 100;  // 注入日记时的最大行数
  * @param {object} config - The configuration object passed from PluginManager.
  * @param {object} dependencies - An object containing dependencies.
  */
-function initialize(config, dependencies) {
-    DEBUG_MODE = String(config.DebugMode || 'false').toLowerCase() === 'true';
+function initialize(config = {}, dependencies) {
+    DEBUG_MODE = String(config.DebugMode ?? 'false').toLowerCase() === 'true';
     
-    // 读取配置
-    SCHEDULE_INTERVAL_MINUTES = parseInt(config.AUTONOMOUS_SCHEDULE_INTERVAL_MINUTES || '5', 10);
-    IDLE_PROBABILITY = parseFloat(config.AUTONOMOUS_IDLE_PROBABILITY || '0.2');
-    SCHEDULER_ENABLED = String(config.AUTONOMOUS_SCHEDULER_ENABLED || 'true').toLowerCase() === 'true';
+    // 读取配置；显式 false/0 是有效值，不能按“缺省”处理。
+    SCHEDULE_INTERVAL_MINUTES = parseInt(config.AUTONOMOUS_SCHEDULE_INTERVAL_MINUTES ?? '5', 10);
+    IDLE_PROBABILITY = parseFloat(config.AUTONOMOUS_IDLE_PROBABILITY ?? '0.2');
+    SCHEDULER_ENABLED = String(config.AUTONOMOUS_SCHEDULER_ENABLED ?? 'true').toLowerCase() === 'true';
     
     if (DEBUG_MODE) {
         console.error(`[AutonomousSchedulerPlugin] Initializing...`);
@@ -231,9 +257,8 @@ function extractSkillsFromDescription(description) {
  * Starts the periodic scheduler
  */
 function startScheduler() {
-    if (schedulerInterval) {
-        clearInterval(schedulerInterval);
-    }
+    if (schedulerInterval) clearInterval(schedulerInterval);
+    if (schedulerStartupTimeout) clearTimeout(schedulerStartupTimeout);
     
     const intervalMs = SCHEDULE_INTERVAL_MINUTES * 60 * 1000;
     
@@ -243,8 +268,9 @@ function startScheduler() {
         await performScheduledCheck();
     }, intervalMs);
     
-    // 延迟30秒后执行第一次检查，给其他插件初始化时间
-    setTimeout(async () => {
+    // 延迟30秒后执行第一次检查，给其他插件初始化时间。
+    schedulerStartupTimeout = setTimeout(async () => {
+        schedulerStartupTimeout = null;
         if (SCHEDULER_ENABLED) {
             console.log('[AutonomousSchedulerPlugin] Performing initial check after startup...');
             await performScheduledCheck();
@@ -259,85 +285,169 @@ function stopScheduler() {
     if (schedulerInterval) {
         clearInterval(schedulerInterval);
         schedulerInterval = null;
-        console.log('[AutonomousSchedulerPlugin] Scheduler stopped.');
     }
+    if (schedulerStartupTimeout) {
+        clearTimeout(schedulerStartupTimeout);
+        schedulerStartupTimeout = null;
+    }
+    console.log('[AutonomousSchedulerPlugin] Scheduler stopped.');
 }
 
 /**
- * Performs a scheduled check of the task board
+ * 每轮先对账桥接，再同时检查 open 与 in_progress。进行中任务的续跑不受空闲概率影响。
  */
 async function performScheduledCheck() {
+    if (schedulerCheckRunning) {
+        return {
+            status: 'skipped',
+            reason: 'check_already_running',
+            timestamp: lastCheckTime
+        };
+    }
+
+    schedulerCheckRunning = true;
     lastCheckTime = new Date().toISOString();
     
     if (DEBUG_MODE) {
         console.error(`[AutonomousSchedulerPlugin] Performing scheduled check at ${lastCheckTime}`);
     }
     
+    const summary = {
+        status: 'active',
+        tasksFound: 0,
+        openTasksFound: 0,
+        inProgressTasksFound: 0,
+        tasksAssigned: 0,
+        tasksResumed: 0,
+        existingDelegations: 0,
+        orphanedTasks: 0,
+        taskErrors: [],
+        timestamp: lastCheckTime
+    };
+
     try {
-        // 1. 获取任务板上的开放任务
-        const openTasks = await getOpenTasks();
-        
-        if (openTasks.length === 0) {
-            // 没有任务时，根据概率决定是否进行空闲检查
+        // 桥接先执行统一对账/限次恢复，调度器不能绕过现有映射自行创建第二个委托。
+        const reconciliation = await reconcileTaskFlowlocks();
+        const [openTasks, inProgressTasks] = await Promise.all([
+            getTasksByStatus('open'),
+            getTasksByStatus('in_progress')
+        ]);
+
+        summary.openTasksFound = openTasks.length;
+        summary.inProgressTasksFound = inProgressTasks.length;
+        summary.tasksFound = openTasks.length + inProgressTasks.length;
+
+        if (summary.tasksFound === 0) {
             if (Math.random() < IDLE_PROBABILITY) {
-                await performIdleCheck();
+                summary.idleCheck = await performIdleCheck();
             }
-            lastCheckResult = { status: 'idle', tasksFound: 0, timestamp: lastCheckTime };
-            return;
+            summary.status = 'idle';
+            summary.bridgeReconciliation = reconciliation;
+            lastCheckResult = summary;
+            return summary;
         }
-        
-        // 2. 处理每个开放任务
-        let tasksAssigned = 0;
+
+        // 新任务仍走原子接取 -> 首次委托流程。
         for (const task of openTasks) {
-            const result = await tryAssignTask(task);
-            if (result.success) {
-                tasksAssigned++;
+            try {
+                const result = await tryAssignTask(task);
+                if (result.success) summary.tasksAssigned++;
+                else summary.taskErrors.push({ taskId: task.id, phase: 'assign', reason: result.reason || 'assignment_failed' });
+            } catch (error) {
+                summary.taskErrors.push({ taskId: task.id, phase: 'assign', reason: error.message });
+                console.error(`[AutonomousSchedulerPlugin] Error assigning task ${task.id}:`, error.message);
             }
         }
-        
-        lastCheckResult = { 
-            status: 'active', 
-            tasksFound: openTasks.length, 
-            tasksAssigned,
-            timestamp: lastCheckTime 
-        };
-        
-        if (DEBUG_MODE) {
-            console.error(`[AutonomousSchedulerPlugin] Check complete: ${tasksAssigned}/${openTasks.length} tasks assigned.`);
+
+        // 对账后取一次映射快照。任何已有映射都不由调度器重复派发；orphaned 由桥接重派上限控制。
+        const mappingResult = await getTaskFlowlockMappings();
+        const mappingsByKey = new Map(mappingResult.mappings.map(mapping => [
+            `${mapping.agentName}::${mapping.taskId}`,
+            mapping
+        ]));
+
+        for (const task of inProgressTasks) {
+            try {
+                const result = await resumeTaskForContinuation(task, mappingsByKey);
+                if (result.reason === 'assignment_changed') {
+                    summary.taskErrors.push({ taskId: task.id, phase: 'resume', reason: result.reason });
+                } else if (result.existing) {
+                    if (result.mapping?.status === 'orphaned') summary.orphanedTasks++;
+                    else summary.existingDelegations++;
+                } else if (result.success && result.started) {
+                    summary.tasksResumed++;
+                    if (result.mapping) mappingsByKey.set(`${result.mapping.agentName}::${result.mapping.taskId}`, result.mapping);
+                } else if (!result.success) {
+                    summary.taskErrors.push({ taskId: task.id, phase: 'resume', reason: result.reason || 'resume_failed' });
+                }
+            } catch (error) {
+                summary.taskErrors.push({ taskId: task.id, phase: 'resume', reason: error.message });
+                console.error(`[AutonomousSchedulerPlugin] Error resuming task ${task.id}:`, error.message);
+            }
         }
-        
+
+        summary.bridgeReconciliation = reconciliation;
+        summary.status = summary.taskErrors.length > 0 || summary.orphanedTasks > 0 ? 'partial' : 'active';
+        lastCheckResult = summary;
+
+        if (DEBUG_MODE) {
+            console.error(
+                `[AutonomousSchedulerPlugin] Check complete: open=${summary.openTasksFound}, ` +
+                `in_progress=${summary.inProgressTasksFound}, assigned=${summary.tasksAssigned}, ` +
+                `resumed=${summary.tasksResumed}, active=${summary.existingDelegations}, errors=${summary.taskErrors.length}.`
+            );
+        }
+        return summary;
     } catch (error) {
         console.error('[AutonomousSchedulerPlugin] Error during scheduled check:', error.message);
-        lastCheckResult = { status: 'error', error: error.message, timestamp: lastCheckTime };
+        summary.status = 'error';
+        summary.error = error.message;
+        lastCheckResult = summary;
+        return summary;
+    } finally {
+        schedulerCheckRunning = false;
     }
 }
 
+async function reconcileTaskFlowlocks() {
+    if (!pluginManagerRef?.processToolCall) throw new Error('PluginManager reference not available');
+    const result = await pluginManagerRef.processToolCall('TaskFlowlockBridgePlugin', {
+        command: 'ReconcileTaskFlowlocks',
+        allow_redispatch: true
+    });
+    if (!result || result.status !== 'success') {
+        throw new Error(result?.error || 'TaskFlowlockBridgePlugin reconciliation failed');
+    }
+    return result;
+}
+
+async function getTaskFlowlockMappings() {
+    if (!pluginManagerRef?.processToolCall) throw new Error('PluginManager reference not available');
+    const result = await pluginManagerRef.processToolCall('TaskFlowlockBridgePlugin', {
+        command: 'ListTaskFlowlocks'
+    });
+    if (!result || result.status !== 'success' || !Array.isArray(result.mappings)) {
+        throw new Error(result?.error || 'Unable to list TaskFlowlockBridge mappings');
+    }
+    return result;
+}
+
 /**
- * Gets open tasks from TaskBoardPlugin
+ * Reads all tasks of a state. Query failures are raised instead of being converted to an empty list/idle result.
  */
-async function getOpenTasks() {
-    if (!pluginManagerRef) {
+async function getTasksByStatus(status) {
+    if (!pluginManagerRef?.processToolCall) {
         throw new Error('PluginManager reference not available');
     }
-    
-    try {
-        const result = await pluginManagerRef.processToolCall('TaskBoard', {
-            command: 'ListTasks',
-            status: 'open',
-            limit: 10
-        });
-        
-        if (result && result.status === 'success' && result.tasks) {
-            return result.tasks;
-        }
-        
-        return [];
-    } catch (error) {
-        if (DEBUG_MODE) {
-            console.error('[AutonomousSchedulerPlugin] Error fetching tasks from TaskBoardPlugin:', error.message);
-        }
-        return [];
+
+    const result = await pluginManagerRef.processToolCall('TaskBoard', {
+        command: 'ListTasks',
+        status
+    });
+    if (!result || result.status !== 'success' || !Array.isArray(result.tasks)) {
+        throw new Error(result?.error || `TaskBoard ListTasks(${status}) failed`);
     }
+    return result.tasks;
 }
 
 /**
@@ -416,8 +526,75 @@ async function tryAssignTask(task) {
 }
 
 /**
- * Wakes an agent to continue their in-progress task
- * @param {string} agentName - The agent's name
+ * Resumes one concrete in-progress task. Existing bridge mappings are authoritative;
+ * the scheduler never creates a second delegation for the same agent/task mapping.
+ */
+async function resumeTaskForContinuation(task, mappingsByKey = new Map()) {
+    const agentName = task?.assignee;
+    if (!task?.id || !agentName) {
+        return { success: false, taskId: task?.id || null, reason: 'task_missing_assignee' };
+    }
+
+    const key = `${agentName}::${task.id}`;
+    const existing = mappingsByKey.get(key);
+    if (existing) {
+        const assignmentMatches = !existing.assignmentId || existing.assignmentId === task.assignment_id;
+        if (!assignmentMatches) {
+            return {
+                success: false,
+                existing: true,
+                taskId: task.id,
+                mapping: existing,
+                reason: 'assignment_changed'
+            };
+        }
+        return {
+            success: existing.status !== 'orphaned',
+            existing: true,
+            started: false,
+            taskId: task.id,
+            mapping: existing,
+            idempotent: true,
+            reason: existing.status === 'orphaned' ? 'bridge_mapping_orphaned' : null
+        };
+    }
+
+    const diaryContent = await readTaskDiary(task.id);
+    const continuationPrompt = buildContinuationPrompt(task, agentName, diaryContent);
+    const flowlockResult = await pluginManagerRef.processToolCall('TaskFlowlockBridgePlugin', {
+        command: 'StartTaskFlowlock',
+        task_id: task.id,
+        agent_name: agentName,
+        assignment_id: task.assignment_id,
+        prompt: continuationPrompt
+    });
+
+    if (flowlockResult?.status === 'success' && flowlockResult.mapping) {
+        if (DEBUG_MODE) {
+            console.error(`[AutonomousSchedulerPlugin] Started continuation for ${agentName}, task ${task.id}`);
+        }
+        return {
+            success: true,
+            existing: false,
+            started: true,
+            taskId: task.id,
+            mapping: flowlockResult.mapping,
+            idempotent: !!flowlockResult.idempotent
+        };
+    }
+
+    return {
+        success: false,
+        existing: false,
+        started: false,
+        taskId: task.id,
+        reason: flowlockResult?.error || 'task_flowlock_bridge_start_failed'
+    };
+}
+
+/**
+ * Manually resumes every in-progress task owned by an Agent.
+ * The automatic scheduler uses the same per-task helper, so behavior stays consistent.
  */
 async function wakeAgentForContinuation(agentName) {
     if (!pluginManagerRef) {
@@ -425,46 +602,41 @@ async function wakeAgentForContinuation(agentName) {
     }
     
     try {
-        // 1. 查找该Agent的进行中任务
+        await reconcileTaskFlowlocks();
         const inProgressTasks = await getTasksByStatus('in_progress');
-        const agentTask = inProgressTasks.find(t => t.assignee === agentName);
-        
-        if (!agentTask) {
-            return { success: false, reason: 'no_active_task', agentName };
+        const agentTasks = inProgressTasks.filter(task => task.assignee === agentName);
+        if (agentTasks.length === 0) {
+            return { success: false, reason: 'no_active_task', agentName, tasks: [] };
         }
-        
-        // 2. 读取任务日记并构建继续工作的提示
-        const diaryContent = await readTaskDiary(agentTask.id);
-        const continuationPrompt = buildContinuationPrompt(agentTask, agentName, diaryContent);
 
-        // 3. 幂等启动、恢复或查询该任务的官方 AA Flowlock 委托映射。
-        const flowlockResult = await pluginManagerRef.processToolCall('TaskFlowlockBridgePlugin', {
-            command: 'StartTaskFlowlock',
-            task_id: agentTask.id,
-            agent_name: agentName,
-            assignment_id: agentTask.assignment_id,
-            prompt: continuationPrompt
-        });
-
-        if (flowlockResult && flowlockResult.status === 'success') {
-            if (DEBUG_MODE) {
-                console.error(`[AutonomousSchedulerPlugin] Started or found AA Flowlock delegation for ${agentName}, task ${agentTask.id}`);
+        const mappingResult = await getTaskFlowlockMappings();
+        const mappingsByKey = new Map(mappingResult.mappings.map(mapping => [
+            `${mapping.agentName}::${mapping.taskId}`,
+            mapping
+        ]));
+        const tasks = [];
+        for (const task of agentTasks) {
+            try {
+                tasks.push(await resumeTaskForContinuation(task, mappingsByKey));
+            } catch (error) {
+                tasks.push({ success: false, taskId: task.id, reason: error.message });
             }
-            return {
-                success: true,
-                agent: agentName,
-                task: agentTask.id,
-                delegationId: flowlockResult.mapping?.delegationId || null,
-                bridgeStatus: flowlockResult.mapping?.status || null,
-                idempotent: !!flowlockResult.idempotent
-            };
         }
 
-        return { success: false, reason: flowlockResult?.error || 'task_flowlock_bridge_start_failed' };
-        
+        const successful = tasks.filter(result => result.success);
+        const first = tasks[0];
+        return {
+            success: successful.length > 0,
+            agentName,
+            task: first?.taskId || null,
+            tasks,
+            resumedCount: tasks.filter(result => result.started).length,
+            existingCount: tasks.filter(result => result.existing && result.success).length,
+            reason: successful.length > 0 ? null : (tasks[0]?.reason || 'resume_failed')
+        };
     } catch (error) {
         console.error(`[AutonomousSchedulerPlugin] Error waking agent ${agentName}:`, error.message);
-        return { success: false, reason: error.message };
+        return { success: false, reason: error.message, agentName, tasks: [] };
     }
 }
 
@@ -634,67 +806,18 @@ ${diaryContent}
 }
 
 /**
- * Performs an idle check when no tasks are available
+ * 可选的低频空板维护，只在 open 与 in_progress 都为空时触发。
+ * 它不负责续跑任务，进行中任务续跑由 performScheduledCheck 确定性处理。
  */
 async function performIdleCheck() {
     if (DEBUG_MODE) {
-        console.error('[AutonomousSchedulerPlugin] Performing idle check...');
+        console.error('[AutonomousSchedulerPlugin] Performing empty-board maintenance check...');
     }
-    
-    // 可以扩展：
-    // - 检查是否有需要跟进的进行中任务
-    // - 检查是否有过期任务需要处理
-    // - 触发Agent进行例行巡检
-    
-    try {
-        // 获取进行中的任务，检查是否需要提醒
-        const inProgressTasks = await getTasksByStatus('in_progress');
-        
-        for (const task of inProgressTasks) {
-            // 检查任务是否接近截止时间
-            if (task.deadline) {
-                const deadline = new Date(task.deadline);
-                const now = new Date();
-                const hoursRemaining = (deadline - now) / (1000 * 60 * 60);
-                
-                if (hoursRemaining > 0 && hoursRemaining < 24) {
-                    // 任务即将到期，可以发送提醒
-                    if (DEBUG_MODE) {
-                        console.error(`[AutonomousSchedulerPlugin] Task ${task.id} is due in ${hoursRemaining.toFixed(1)} hours`);
-                    }
-                }
-            }
-        }
-    } catch (error) {
-        if (DEBUG_MODE) {
-            console.error('[AutonomousSchedulerPlugin] Error during idle check:', error.message);
-        }
-    }
-}
 
-/**
- * Gets tasks by status from TaskBoardPlugin
- */
-async function getTasksByStatus(status) {
-    if (!pluginManagerRef) {
-        return [];
-    }
-    
-    try {
-        const result = await pluginManagerRef.processToolCall('TaskBoard', {
-            command: 'ListTasks',
-            status: status,
-            limit: 20
-        });
-        
-        if (result && result.status === 'success' && result.tasks) {
-            return result.tasks;
-        }
-        
-        return [];
-    } catch (error) {
-        return [];
-    }
+    return {
+        status: 'empty_board',
+        checkedAt: new Date().toISOString()
+    };
 }
 
 /**
@@ -742,7 +865,7 @@ async function handleWakeAgent(agentName) {
     if (result.success) {
         return {
             status: 'success',
-            message: `已唤醒 ${agentName} 继续处理任务 ${result.task}`,
+            message: `已检查 ${agentName} 的进行中任务；新增续跑 ${result.resumedCount} 个，已有委托 ${result.existingCount} 个。`,
             result
         };
     } else {
@@ -765,35 +888,38 @@ async function handleGetAgentTask(agentName) {
     
     try {
         const inProgressTasks = await getTasksByStatus('in_progress');
-        const agentTask = inProgressTasks.find(t => t.assignee === agentName);
-        
-        if (!agentTask) {
+        const agentTasks = inProgressTasks.filter(task => task.assignee === agentName);
+        if (agentTasks.length === 0) {
             return {
                 status: 'success',
                 message: `${agentName} 当前没有进行中的任务`,
-                task: null
+                task: null,
+                tasks: []
             };
         }
-        
-        // 同时获取任务日记与官方 AA Flowlock 桥接映射。
-        const diaryContent = await readTaskDiary(agentTask.id);
-        let flowlockMapping = null;
-        try {
-            const bridgeResult = await pluginManagerRef.processToolCall('TaskFlowlockBridgePlugin', {
-                command: 'GetTaskFlowlock',
-                task_id: agentTask.id,
-                agent_name: agentName
-            });
-            if (bridgeResult?.status === 'success') flowlockMapping = bridgeResult.mapping;
-        } catch (bridgeError) {
-            flowlockMapping = { available: false, error: bridgeError.message };
+
+        const diaries = {};
+        const mappings = {};
+        for (const agentTask of agentTasks) {
+            diaries[agentTask.id] = await readTaskDiary(agentTask.id);
+            try {
+                const bridgeResult = await pluginManagerRef.processToolCall('TaskFlowlockBridgePlugin', {
+                    command: 'GetTaskFlowlock',
+                    task_id: agentTask.id,
+                    agent_name: agentName
+                });
+                mappings[agentTask.id] = bridgeResult?.status === 'success' ? bridgeResult.mapping : null;
+            } catch (bridgeError) {
+                mappings[agentTask.id] = { available: false, error: bridgeError.message };
+            }
         }
 
         return {
             status: 'success',
-            task: agentTask,
-            diary: diaryContent,
-            flowlock_mapping: flowlockMapping
+            task: agentTasks[0],
+            tasks: agentTasks,
+            diaries,
+            flowlock_mappings: mappings
         };
     } catch (error) {
         return {
@@ -876,8 +1002,18 @@ function handleSetSchedulerEnabled(enabled) {
     }
 }
 
+function setPluginManagerForTests(manager) {
+    pluginManagerRef = manager;
+}
+
+function performCheckForTests() {
+    return performScheduledCheck();
+}
+
 module.exports = {
     initialize,
     shutdown,
-    processToolCall
+    processToolCall,
+    setPluginManagerForTests,
+    performCheckForTests
 };
