@@ -1,0 +1,105 @@
+
+> vcp-server-project-forge@1.0.0 test
+> node --test tests/*.test.js
+
+[PluginManager] Starting plugin discovery...
+[PluginManager] Loaded manifest: 中央工程施工台 (ServerProjectForge, Type: hybridservice)
+[PluginManager] Loaded manifest: 中央工程状态 (ServerProjectForgeStatus, Type: static)
+[PluginManager] Final message preprocessor order: $StaticPlaceholderInjection
+[PluginManager] VectorDBManager not set! Plugins requiring it may fail.
+[PluginManager] Plugin discovery finished. Loaded 2 plugins.
+[PluginManager] Starting plugin discovery...
+[PluginManager] Loaded manifest: 中央工程施工台 (ServerProjectForge, Type: hybridservice)
+[PluginManager] Loaded manifest: 中央工程状态 (ServerProjectForgeStatus, Type: static)
+[PluginManager] Final message preprocessor order: $StaticPlaceholderInjection
+[PluginManager] VectorDBManager not set! Plugins requiring it may fail.
+[PluginManager] Plugin discovery finished. Loaded 2 plugins.
+[PluginManager] Shutting down all plugins...
+[PluginManager] All plugin shutdown processes initiated and scheduled jobs cancelled.
+✔ real central loader, direct execution bridge, static stdout parsing and hot reload (isolated host dependencies) (366.0682ms)
+✔ real PDF v2, Word, Excel, CSV and image reader fixtures (1324.5219ms)
+✔ SQLite record failure compensates changed bytes and leaves no false history (46.0902ms)
+✔ second-file failure restores first; external second-file edit remains untouched (39.783ms)
+✔ startup restores unfinished journal, retains committed write, refuses drift (45.6777ms)
+✔ cancel before commit restores disk and never records success (32.2254ms)
+✔ symbolResolver：地址语法、打分、歧义、区间 (3.1936ms)
+✔ Outline / FindSymbol / ReadCode symbol= (388.7159ms)
+✔ EditCode symbol=：替换 / 删除连带 JSDoc，同名歧义走票据 (69.1094ms)
+✔ MoveCode symbol= 跨文件 + 整批回退；after=symbol: 落点 (67.4565ms)
+✔ BOM + CRLF 文件按符号编辑后保持换行风格 (27.9802ms)
+✔ 降级：二进制缺失时新命令给提示，旧命令照常 (52.4035ms)
+✔ 崩溃恢复：立即退出 → 退避降级 → 连续失败熔断 (258.4122ms)
+✔ 崩溃恢复：协议版本不匹配直接熔断 (40.1024ms)
+✔ EvalSymbol full entry: JS/MJS/CJS and stopped workspace (249.5614ms)
+✔ JS: real CJS exports, this, async, setup, tagged values, fresh process (1041.0445ms)
+✔ JS: ESM module and bounded logs (52.5355ms)
+✔ worker spawn failure is explicit (1.4322ms)
+✔ Python: package relative import, kwargs, async, setup, errors (1161.3635ms)
+﹣ Rust: compile, list, exact test, fail, ignored and zero match (3112.3429ms) # Cargo unavailable
+✔ EditCode：代码审查期间文件被外部修改时放弃写入，不覆盖外部内容 (278.2521ms)
+✔ Rollback：中途写入失败时恢复已写入文件，并且不记录回退节点 (69.4666ms)
+✔ Python 校验异步执行，期间事件循环可以继续运行 (88.9333ms)
+✔ EditCode：replace 写成 replacement 时报错，不按删除执行 (303.4015ms)
+✔ EditCode：按行替换缺 content 时报错，不把这些行删掉 (29.341ms)
+
+========================================
+Rust 宏与 FFI 导出 20 题全域大考得分: 20 / 20 (100.0%)
+[PASS] 题 1: rusqlite::params! 参数拦截 (禁止参数作为导出符号)
+[PASS] 题 2: iter / collect 链式表达式标识符拦截 (禁止链式调用标识符)
+[PASS] 题 3: tokio::select! 控制流标识符拦截 (禁止事件分支标识符)
+[PASS] 题 4: serde_json::json! 嵌套字面量参数拦截 (禁止 JSON 键值变量)
+[PASS] 题 5: tracing/log 命名参数拦截 (禁止日志命名参数)
+[PASS] 题 6: 基础单标识符导出宏识别 (vcp_kernel_init 必须被提取)
+[PASS] 题 7: 多标识符并行导出宏识别 (attach/detach 双符号必须提取)
+[PASS] 题 8: extern "system" ABI 宏导出识别 (Win32 system ABI 符号提取)
+[PASS] 题 9: crate:: 路径限定宏调用识别 (crate:: 路径宏导出符号识别)
+[PASS] 题 10: self:: 路径限定宏调用识别 (self:: 路径宏导出符号识别)
+[PASS] 题 11: 大括号 {} 与方括号 [] 宏调用语法支持 (brace/bracket 宏语法识别)
+[PASS] 题 12: 带类型注解宏提取（过滤纯类型符号） (函数名提取且排除类型)
+[PASS] 题 13: 虚参数宏提取（排除 pub/extern/fn 关键字） (参数符号提取且排除关键字)
+[PASS] 题 14: export_name 宏提取 (export_name 属性宏识别)
+[PASS] 题 15: 注释中的 no_mangle 伪装宏拦截 (注释不应激活白名单)
+[PASS] 题 16: 字符串字面量中的 no_mangle 伪装拦截 (字符串文本不应激活白名单)
+[PASS] 题 17: 同名局部变量遮蔽宏防御 (普通变量赋值不应被混淆)
+[PASS] 题 18: 空参数宏防御不崩溃 (无参数宏未引发 Parser 异常)
+[PASS] 题 19: 原生 no_mangle 函数符号共存 (原生 FFI 符号不受干扰)
+[PASS] 题 20: 无 FFI 导出的普通属性宏函数拦截 (业务异步函数不入 FFI 导出表)
+========================================
+
+✔ Rust 宏调用与 FFI 导出符号提取：20题全域极限夹逼大考 (87.886ms)
+✔ buildGraph：页面顺序告警、别名只在同页生效、param 不计入动态 (8.9453ms)
+✔ loadPreloadDecls：无声明表时 absent；子进程取数并缓存 (60.7359ms)
+✔ Trace 端到端：wrapper handler、页面级别名、推送方、遗留声明、加载顺序 (100.1895ms)
+✔ isPathInside 拒绝前缀相同的兄弟目录 (0.7949ms)
+✔ 引擎：串内行号以原始快照为准，重叠报错 (0.9105ms)
+✔ 工程生命周期：创建 → 编辑 → 歧义票据 → 回退 → 删除只动数据库 (447.0554ms)
+✔ ReadCode：行号、单文件行范围、find 消歧、越界拒绝 (20.5445ms)
+✔ 删除、恢复和清理事件携带实际影响的单个或批量工程 ID (4.9251ms)
+✔ EditCode：行号前缀剥除、expect 漂移、bestEffort、CRLF 保持 (27.3761ms)
+✔ maid：多 Agent 署名持久化、byMaid 过滤、参与者统计 (33.2372ms)
+✔ store：旧库自动补列迁移 (35.5493ms)
+✔ GUI 门面：只读浏览 + 署名单文件回退（预检 / 冲突 / force / 再回退） (68.3101ms)
+✔ 引擎：首尾锚定 target（带行号 / 按内容配对缩进 / 字面优先） (1.8427ms)
+✔ 引擎：insert before=N / after=end (0.2846ms)
+✔ MoveCode / CopyCode：同文件剪切、跨文件剪切 + 整批回退、复制对齐缩进、歧义候选 (110.7136ms)
+✔ 工程查询：默认最新 10 个、自定义数量、工作区搜索与 GUI 完整列表 (29.3896ms)
+✔ GUI手动验收：保留报告与作者、留痕通知、重复幂等及非法状态拒绝 (9.7791ms)
+✔ central lifecycle, persistent workspaces, Agent-only acceptance and static summary (711.2092ms)
+✔ junction escape and nonexistent descendants rejected for read/write/create project (99.6739ms)
+(node:7788) [stylelint:002] DeprecationWarning: The CommonJS Node.js API is deprecated.
+See https://stylelint.io/migration-guide/to-16
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✔ no configured roots means no authorization; context cancellation fails queued calls (33.8025ms)
+✔ status fails closed on stale, invalid and filtered summaries; environment excludes secrets (2.6509ms)
+✔ CSS/JavaScript validators execute rather than silently degrade (850.8123ms)
+✔ Windows binary outline uses real project absolute path (260.9154ms)
+✔ active execution cancellation and shutdown stop workers; reinitialize remains usable (816.2925ms)
+✔ global queue serializes two project IDs targeting the same file (325.0185ms)
+ℹ tests 51
+ℹ suites 0
+ℹ pass 50
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 5457.1823

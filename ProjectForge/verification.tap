@@ -1,0 +1,362 @@
+TAP version 13
+# [PluginManager] Starting plugin discovery...
+# [PluginManager] Loaded manifest: 中央工程施工台 (ServerProjectForge, Type: hybridservice)
+# [PluginManager] Loaded manifest: 中央工程状态 (ServerProjectForgeStatus, Type: static)
+# [PluginManager] Final message preprocessor order: $StaticPlaceholderInjection
+# [PluginManager] VectorDBManager not set! Plugins requiring it may fail.
+# [PluginManager] Plugin discovery finished. Loaded 2 plugins.
+# [PluginManager] Starting plugin discovery...
+# [PluginManager] Loaded manifest: 中央工程施工台 (ServerProjectForge, Type: hybridservice)
+# [PluginManager] Loaded manifest: 中央工程状态 (ServerProjectForgeStatus, Type: static)
+# [PluginManager] Final message preprocessor order: $StaticPlaceholderInjection
+# [PluginManager] VectorDBManager not set! Plugins requiring it may fail.
+# [PluginManager] Plugin discovery finished. Loaded 2 plugins.
+# [PluginManager] Shutting down all plugins...
+# [PluginManager] All plugin shutdown processes initiated and scheduled jobs cancelled.
+# Subtest: real central loader, direct execution bridge, static stdout parsing and hot reload (isolated host dependencies)
+ok 1 - real central loader, direct execution bridge, static stdout parsing and hot reload (isolated host dependencies)
+  ---
+  duration_ms: 353.8842
+  type: 'test'
+  ...
+# Subtest: real PDF v2, Word, Excel, CSV and image reader fixtures
+ok 2 - real PDF v2, Word, Excel, CSV and image reader fixtures
+  ---
+  duration_ms: 1342.3696
+  type: 'test'
+  ...
+# Subtest: SQLite record failure compensates changed bytes and leaves no false history
+ok 3 - SQLite record failure compensates changed bytes and leaves no false history
+  ---
+  duration_ms: 52.7781
+  type: 'test'
+  ...
+# Subtest: second-file failure restores first; external second-file edit remains untouched
+ok 4 - second-file failure restores first; external second-file edit remains untouched
+  ---
+  duration_ms: 42.1941
+  type: 'test'
+  ...
+# Subtest: startup restores unfinished journal, retains committed write, refuses drift
+ok 5 - startup restores unfinished journal, retains committed write, refuses drift
+  ---
+  duration_ms: 38.1899
+  type: 'test'
+  ...
+# Subtest: cancel before commit restores disk and never records success
+ok 6 - cancel before commit restores disk and never records success
+  ---
+  duration_ms: 32.5772
+  type: 'test'
+  ...
+# Subtest: symbolResolver：地址语法、打分、歧义、区间
+ok 7 - symbolResolver：地址语法、打分、歧义、区间
+  ---
+  duration_ms: 3.644
+  type: 'test'
+  ...
+# Subtest: Outline / FindSymbol / ReadCode symbol=
+ok 8 - Outline / FindSymbol / ReadCode symbol=
+  ---
+  duration_ms: 386.7757
+  type: 'test'
+  ...
+# Subtest: EditCode symbol=：替换 / 删除连带 JSDoc，同名歧义走票据
+ok 9 - EditCode symbol=：替换 / 删除连带 JSDoc，同名歧义走票据
+  ---
+  duration_ms: 70.6074
+  type: 'test'
+  ...
+# Subtest: MoveCode symbol= 跨文件 + 整批回退；after=symbol: 落点
+ok 10 - MoveCode symbol= 跨文件 + 整批回退；after=symbol: 落点
+  ---
+  duration_ms: 68.0504
+  type: 'test'
+  ...
+# Subtest: BOM + CRLF 文件按符号编辑后保持换行风格
+ok 11 - BOM + CRLF 文件按符号编辑后保持换行风格
+  ---
+  duration_ms: 26.6849
+  type: 'test'
+  ...
+# Subtest: 降级：二进制缺失时新命令给提示，旧命令照常
+ok 12 - 降级：二进制缺失时新命令给提示，旧命令照常
+  ---
+  duration_ms: 52.9796
+  type: 'test'
+  ...
+# Subtest: 崩溃恢复：立即退出 → 退避降级 → 连续失败熔断
+ok 13 - 崩溃恢复：立即退出 → 退避降级 → 连续失败熔断
+  ---
+  duration_ms: 253.5721
+  type: 'test'
+  ...
+# Subtest: 崩溃恢复：协议版本不匹配直接熔断
+ok 14 - 崩溃恢复：协议版本不匹配直接熔断
+  ---
+  duration_ms: 43.1529
+  type: 'test'
+  ...
+# Subtest: EvalSymbol full entry: JS/MJS/CJS and stopped workspace
+ok 15 - EvalSymbol full entry: JS/MJS/CJS and stopped workspace
+  ---
+  duration_ms: 241.0851
+  type: 'test'
+  ...
+# Subtest: JS: real CJS exports, this, async, setup, tagged values, fresh process
+ok 16 - JS: real CJS exports, this, async, setup, tagged values, fresh process
+  ---
+  duration_ms: 1041.2731
+  type: 'test'
+  ...
+# Subtest: JS: ESM module and bounded logs
+ok 17 - JS: ESM module and bounded logs
+  ---
+  duration_ms: 52.2309
+  type: 'test'
+  ...
+# Subtest: worker spawn failure is explicit
+ok 18 - worker spawn failure is explicit
+  ---
+  duration_ms: 1.3012
+  type: 'test'
+  ...
+# Subtest: Python: package relative import, kwargs, async, setup, errors
+ok 19 - Python: package relative import, kwargs, async, setup, errors
+  ---
+  duration_ms: 1148.4099
+  type: 'test'
+  ...
+# Subtest: Rust: compile, list, exact test, fail, ignored and zero match
+ok 20 - Rust: compile, list, exact test, fail, ignored and zero match # SKIP Cargo unavailable
+  ---
+  duration_ms: 3113.1297
+  type: 'test'
+  ...
+# Subtest: EditCode：代码审查期间文件被外部修改时放弃写入，不覆盖外部内容
+ok 21 - EditCode：代码审查期间文件被外部修改时放弃写入，不覆盖外部内容
+  ---
+  duration_ms: 263.2723
+  type: 'test'
+  ...
+# Subtest: Rollback：中途写入失败时恢复已写入文件，并且不记录回退节点
+ok 22 - Rollback：中途写入失败时恢复已写入文件，并且不记录回退节点
+  ---
+  duration_ms: 66.7831
+  type: 'test'
+  ...
+# Subtest: Python 校验异步执行，期间事件循环可以继续运行
+ok 23 - Python 校验异步执行，期间事件循环可以继续运行
+  ---
+  duration_ms: 84.9803
+  type: 'test'
+  ...
+# Subtest: EditCode：replace 写成 replacement 时报错，不按删除执行
+ok 24 - EditCode：replace 写成 replacement 时报错，不按删除执行
+  ---
+  duration_ms: 299.1071
+  type: 'test'
+  ...
+# Subtest: EditCode：按行替换缺 content 时报错，不把这些行删掉
+ok 25 - EditCode：按行替换缺 content 时报错，不把这些行删掉
+  ---
+  duration_ms: 28.6118
+  type: 'test'
+  ...
+# ========================================
+# Rust 宏与 FFI 导出 20 题全域大考得分: 20 / 20 (100.0%)
+# [PASS] 题 1: rusqlite::params! 参数拦截 (禁止参数作为导出符号)
+# [PASS] 题 2: iter / collect 链式表达式标识符拦截 (禁止链式调用标识符)
+# [PASS] 题 3: tokio::select! 控制流标识符拦截 (禁止事件分支标识符)
+# [PASS] 题 4: serde_json::json! 嵌套字面量参数拦截 (禁止 JSON 键值变量)
+# [PASS] 题 5: tracing/log 命名参数拦截 (禁止日志命名参数)
+# [PASS] 题 6: 基础单标识符导出宏识别 (vcp_kernel_init 必须被提取)
+# [PASS] 题 7: 多标识符并行导出宏识别 (attach/detach 双符号必须提取)
+# [PASS] 题 8: extern "system" ABI 宏导出识别 (Win32 system ABI 符号提取)
+# [PASS] 题 9: crate:: 路径限定宏调用识别 (crate:: 路径宏导出符号识别)
+# [PASS] 题 10: self:: 路径限定宏调用识别 (self:: 路径宏导出符号识别)
+# [PASS] 题 11: 大括号 {} 与方括号 [] 宏调用语法支持 (brace/bracket 宏语法识别)
+# [PASS] 题 12: 带类型注解宏提取（过滤纯类型符号） (函数名提取且排除类型)
+# [PASS] 题 13: 虚参数宏提取（排除 pub/extern/fn 关键字） (参数符号提取且排除关键字)
+# [PASS] 题 14: export_name 宏提取 (export_name 属性宏识别)
+# [PASS] 题 15: 注释中的 no_mangle 伪装宏拦截 (注释不应激活白名单)
+# [PASS] 题 16: 字符串字面量中的 no_mangle 伪装拦截 (字符串文本不应激活白名单)
+# [PASS] 题 17: 同名局部变量遮蔽宏防御 (普通变量赋值不应被混淆)
+# [PASS] 题 18: 空参数宏防御不崩溃 (无参数宏未引发 Parser 异常)
+# [PASS] 题 19: 原生 no_mangle 函数符号共存 (原生 FFI 符号不受干扰)
+# [PASS] 题 20: 无 FFI 导出的普通属性宏函数拦截 (业务异步函数不入 FFI 导出表)
+# ========================================
+# Subtest: Rust 宏调用与 FFI 导出符号提取：20题全域极限夹逼大考
+ok 26 - Rust 宏调用与 FFI 导出符号提取：20题全域极限夹逼大考
+  ---
+  duration_ms: 84.2708
+  type: 'test'
+  ...
+# Subtest: buildGraph：页面顺序告警、别名只在同页生效、param 不计入动态
+ok 27 - buildGraph：页面顺序告警、别名只在同页生效、param 不计入动态
+  ---
+  duration_ms: 9.7451
+  type: 'test'
+  ...
+# Subtest: loadPreloadDecls：无声明表时 absent；子进程取数并缓存
+ok 28 - loadPreloadDecls：无声明表时 absent；子进程取数并缓存
+  ---
+  duration_ms: 58.2285
+  type: 'test'
+  ...
+# Subtest: Trace 端到端：wrapper handler、页面级别名、推送方、遗留声明、加载顺序
+ok 29 - Trace 端到端：wrapper handler、页面级别名、推送方、遗留声明、加载顺序
+  ---
+  duration_ms: 108.4464
+  type: 'test'
+  ...
+# Subtest: isPathInside 拒绝前缀相同的兄弟目录
+ok 30 - isPathInside 拒绝前缀相同的兄弟目录
+  ---
+  duration_ms: 0.8202
+  type: 'test'
+  ...
+# Subtest: 引擎：串内行号以原始快照为准，重叠报错
+ok 31 - 引擎：串内行号以原始快照为准，重叠报错
+  ---
+  duration_ms: 1.0421
+  type: 'test'
+  ...
+# Subtest: 工程生命周期：创建 → 编辑 → 歧义票据 → 回退 → 删除只动数据库
+ok 32 - 工程生命周期：创建 → 编辑 → 歧义票据 → 回退 → 删除只动数据库
+  ---
+  duration_ms: 439.8037
+  type: 'test'
+  ...
+# Subtest: ReadCode：行号、单文件行范围、find 消歧、越界拒绝
+ok 33 - ReadCode：行号、单文件行范围、find 消歧、越界拒绝
+  ---
+  duration_ms: 20.8193
+  type: 'test'
+  ...
+# Subtest: 删除、恢复和清理事件携带实际影响的单个或批量工程 ID
+ok 34 - 删除、恢复和清理事件携带实际影响的单个或批量工程 ID
+  ---
+  duration_ms: 5.1137
+  type: 'test'
+  ...
+# Subtest: EditCode：行号前缀剥除、expect 漂移、bestEffort、CRLF 保持
+ok 35 - EditCode：行号前缀剥除、expect 漂移、bestEffort、CRLF 保持
+  ---
+  duration_ms: 24.1199
+  type: 'test'
+  ...
+# Subtest: maid：多 Agent 署名持久化、byMaid 过滤、参与者统计
+ok 36 - maid：多 Agent 署名持久化、byMaid 过滤、参与者统计
+  ---
+  duration_ms: 32.3767
+  type: 'test'
+  ...
+# Subtest: store：旧库自动补列迁移
+ok 37 - store：旧库自动补列迁移
+  ---
+  duration_ms: 33.1085
+  type: 'test'
+  ...
+# Subtest: GUI 门面：只读浏览 + 署名单文件回退（预检 / 冲突 / force / 再回退）
+ok 38 - GUI 门面：只读浏览 + 署名单文件回退（预检 / 冲突 / force / 再回退）
+  ---
+  duration_ms: 66.4067
+  type: 'test'
+  ...
+# Subtest: 引擎：首尾锚定 target（带行号 / 按内容配对缩进 / 字面优先）
+ok 39 - 引擎：首尾锚定 target（带行号 / 按内容配对缩进 / 字面优先）
+  ---
+  duration_ms: 1.9051
+  type: 'test'
+  ...
+# Subtest: 引擎：insert before=N / after=end
+ok 40 - 引擎：insert before=N / after=end
+  ---
+  duration_ms: 0.2877
+  type: 'test'
+  ...
+# Subtest: MoveCode / CopyCode：同文件剪切、跨文件剪切 + 整批回退、复制对齐缩进、歧义候选
+ok 41 - MoveCode / CopyCode：同文件剪切、跨文件剪切 + 整批回退、复制对齐缩进、歧义候选
+  ---
+  duration_ms: 110.1201
+  type: 'test'
+  ...
+# Subtest: 工程查询：默认最新 10 个、自定义数量、工作区搜索与 GUI 完整列表
+ok 42 - 工程查询：默认最新 10 个、自定义数量、工作区搜索与 GUI 完整列表
+  ---
+  duration_ms: 29.4312
+  type: 'test'
+  ...
+# Subtest: GUI手动验收：保留报告与作者、留痕通知、重复幂等及非法状态拒绝
+ok 43 - GUI手动验收：保留报告与作者、留痕通知、重复幂等及非法状态拒绝
+  ---
+  duration_ms: 9.2001
+  type: 'test'
+  ...
+# Subtest: central lifecycle, persistent workspaces, Agent-only acceptance and static summary
+ok 44 - central lifecycle, persistent workspaces, Agent-only acceptance and static summary
+  ---
+  duration_ms: 689.1854
+  type: 'test'
+  ...
+# Subtest: junction escape and nonexistent descendants rejected for read/write/create project
+ok 45 - junction escape and nonexistent descendants rejected for read/write/create project
+  ---
+  duration_ms: 92.4054
+  type: 'test'
+  ...
+# (node:2660) [stylelint:002] DeprecationWarning: The CommonJS Node.js API is deprecated.
+# See https://stylelint.io/migration-guide/to-16
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: no configured roots means no authorization; context cancellation fails queued calls
+ok 46 - no configured roots means no authorization; context cancellation fails queued calls
+  ---
+  duration_ms: 33.4946
+  type: 'test'
+  ...
+# Subtest: status fails closed on stale, invalid and filtered summaries; environment excludes secrets
+ok 47 - status fails closed on stale, invalid and filtered summaries; environment excludes secrets
+  ---
+  duration_ms: 2.6728
+  type: 'test'
+  ...
+# Subtest: CSS/JavaScript validators execute rather than silently degrade
+ok 48 - CSS/JavaScript validators execute rather than silently degrade
+  ---
+  duration_ms: 830.6078
+  type: 'test'
+  ...
+# Subtest: Windows binary outline uses real project absolute path
+ok 49 - Windows binary outline uses real project absolute path
+  ---
+  duration_ms: 273.2361
+  type: 'test'
+  ...
+# Subtest: recycle-bin failure never hard-deletes; real Windows recycle and snapshot restore
+ok 50 - recycle-bin failure never hard-deletes; real Windows recycle and snapshot restore
+  ---
+  duration_ms: 481.9906
+  type: 'test'
+  ...
+# Subtest: active execution cancellation and shutdown stop workers; reinitialize remains usable
+ok 51 - active execution cancellation and shutdown stop workers; reinitialize remains usable
+  ---
+  duration_ms: 859.0108
+  type: 'test'
+  ...
+# Subtest: global queue serializes two project IDs targeting the same file
+ok 52 - global queue serializes two project IDs targeting the same file
+  ---
+  duration_ms: 359.5197
+  type: 'test'
+  ...
+1..52
+# tests 52
+# suites 0
+# pass 51
+# fail 0
+# cancelled 0
+# skipped 1
+# todo 0
+# duration_ms 5446.237

@@ -1,0 +1,33 @@
+{
+  "name": "vcp-server-project-forge",
+  "version": "1.0.0",
+  "private": true,
+  "main": "ServerProjectForge.js",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "license": "CC-BY-NC-SA-4.0",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "build:indexer": "node indexer/build-runtime.js"
+  },
+  "dependencies": {
+    "@eslint/js": "^9.39.0",
+    "better-sqlite3": "^12.4.1",
+    "diff-match-patch": "^1.0.5",
+    "eslint": "^9.39.0",
+    "exceljs": "^4.4.0",
+    "glob": "^14.0.3",
+    "globals": "^14.0.0",
+    "mammoth": "^1.11.0",
+    "pdf-parse": "^2.2.16",
+    "postcss-safe-parser": "^7.0.1",
+    "proper-lockfile": "^4.1.2",
+    "stylelint": "^16.25.0",
+    "stylelint-config-standard": "^38.0.0",
+    "trash": "^10.0.0"
+  },
+  "devDependencies": {
+    "jszip": "^3.10.1"
+  }
+}

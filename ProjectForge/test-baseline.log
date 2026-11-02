@@ -1,0 +1,74 @@
+
+> vcp-server-project-forge@1.0.0 test
+> node --test tests/*.test.js
+
+✔ symbolResolver：地址语法、打分、歧义、区间 (3.2028ms)
+✔ Outline / FindSymbol / ReadCode symbol= (394.1347ms)
+✔ EditCode symbol=：替换 / 删除连带 JSDoc，同名歧义走票据 (38.0444ms)
+✔ MoveCode symbol= 跨文件 + 整批回退；after=symbol: 落点 (35.1024ms)
+✔ BOM + CRLF 文件按符号编辑后保持换行风格 (10.1973ms)
+✔ 降级：二进制缺失时新命令给提示，旧命令照常 (53.2733ms)
+✔ 崩溃恢复：立即退出 → 退避降级 → 连续失败熔断 (273.1658ms)
+✔ 崩溃恢复：协议版本不匹配直接熔断 (40.0356ms)
+✔ EvalSymbol full entry: JS/MJS/CJS and stopped workspace (393.9118ms)
+✔ JS: real CJS exports, this, async, setup, tagged values, fresh process (1079.392ms)
+✔ JS: ESM module and bounded logs (55.2739ms)
+✔ worker spawn failure is explicit (1.4261ms)
+✔ Python: package relative import, kwargs, async, setup, errors (1150.2532ms)
+﹣ Rust: compile, list, exact test, fail, ignored and zero match (3133.9525ms) # Cargo unavailable
+✔ EditCode：代码审查期间文件被外部修改时放弃写入，不覆盖外部内容 (287.4318ms)
+✔ Rollback：中途写入失败时恢复已写入文件，并且不记录回退节点 (36.2921ms)
+✔ Python 校验异步执行，期间事件循环可以继续运行 (94.7749ms)
+✔ EditCode：replace 写成 replacement 时报错，不按删除执行 (299.7957ms)
+✔ EditCode：按行替换缺 content 时报错，不把这些行删掉 (12.6617ms)
+
+========================================
+Rust 宏与 FFI 导出 20 题全域大考得分: 20 / 20 (100.0%)
+[PASS] 题 1: rusqlite::params! 参数拦截 (禁止参数作为导出符号)
+[PASS] 题 2: iter / collect 链式表达式标识符拦截 (禁止链式调用标识符)
+[PASS] 题 3: tokio::select! 控制流标识符拦截 (禁止事件分支标识符)
+[PASS] 题 4: serde_json::json! 嵌套字面量参数拦截 (禁止 JSON 键值变量)
+[PASS] 题 5: tracing/log 命名参数拦截 (禁止日志命名参数)
+[PASS] 题 6: 基础单标识符导出宏识别 (vcp_kernel_init 必须被提取)
+[PASS] 题 7: 多标识符并行导出宏识别 (attach/detach 双符号必须提取)
+[PASS] 题 8: extern "system" ABI 宏导出识别 (Win32 system ABI 符号提取)
+[PASS] 题 9: crate:: 路径限定宏调用识别 (crate:: 路径宏导出符号识别)
+[PASS] 题 10: self:: 路径限定宏调用识别 (self:: 路径宏导出符号识别)
+[PASS] 题 11: 大括号 {} 与方括号 [] 宏调用语法支持 (brace/bracket 宏语法识别)
+[PASS] 题 12: 带类型注解宏提取（过滤纯类型符号） (函数名提取且排除类型)
+[PASS] 题 13: 虚参数宏提取（排除 pub/extern/fn 关键字） (参数符号提取且排除关键字)
+[PASS] 题 14: export_name 宏提取 (export_name 属性宏识别)
+[PASS] 题 15: 注释中的 no_mangle 伪装宏拦截 (注释不应激活白名单)
+[PASS] 题 16: 字符串字面量中的 no_mangle 伪装拦截 (字符串文本不应激活白名单)
+[PASS] 题 17: 同名局部变量遮蔽宏防御 (普通变量赋值不应被混淆)
+[PASS] 题 18: 空参数宏防御不崩溃 (无参数宏未引发 Parser 异常)
+[PASS] 题 19: 原生 no_mangle 函数符号共存 (原生 FFI 符号不受干扰)
+[PASS] 题 20: 无 FFI 导出的普通属性宏函数拦截 (业务异步函数不入 FFI 导出表)
+========================================
+
+✔ Rust 宏调用与 FFI 导出符号提取：20题全域极限夹逼大考 (213.0694ms)
+✔ buildGraph：页面顺序告警、别名只在同页生效、param 不计入动态 (6.1904ms)
+✔ loadPreloadDecls：无声明表时 absent；子进程取数并缓存 (53.9162ms)
+✔ Trace 端到端：wrapper handler、页面级别名、推送方、遗留声明、加载顺序 (155.1781ms)
+✔ isPathInside 拒绝前缀相同的兄弟目录 (0.7611ms)
+✔ 引擎：串内行号以原始快照为准，重叠报错 (0.9216ms)
+✔ 工程生命周期：创建 → 编辑 → 歧义票据 → 回退 → 删除只动数据库 (399.0853ms)
+✔ ReadCode：行号、单文件行范围、find 消歧、越界拒绝 (12.1804ms)
+✔ 删除、恢复和清理事件携带实际影响的单个或批量工程 ID (4.7758ms)
+✔ EditCode：行号前缀剥除、expect 漂移、bestEffort、CRLF 保持 (10.944ms)
+✔ maid：多 Agent 署名持久化、byMaid 过滤、参与者统计 (13.854ms)
+✔ store：旧库自动补列迁移 (59.2178ms)
+✔ GUI 门面：只读浏览 + 署名单文件回退（预检 / 冲突 / force / 再回退） (42.7894ms)
+✔ 引擎：首尾锚定 target（带行号 / 按内容配对缩进 / 字面优先） (1.9455ms)
+✔ 引擎：insert before=N / after=end (0.3259ms)
+✔ MoveCode / CopyCode：同文件剪切、跨文件剪切 + 整批回退、复制对齐缩进、歧义候选 (71.5537ms)
+✔ 工程查询：默认最新 10 个、自定义数量、工作区搜索与 GUI 完整列表 (24.336ms)
+✔ GUI手动验收：保留报告与作者、留痕通知、重复幂等及非法状态拒绝 (9.308ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 5491.8364

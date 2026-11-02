@@ -1,0 +1,44 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "ServerProjectForgeStatus",
+  "displayName": "中央工程状态",
+  "version": "1.0.0",
+  "description": "只读中央工程摘要，按语义相关性展开工程进度和待办，不加载施工核心或数据库。",
+  "author": "VCPToolBox",
+  "license": "CC BY-NC-SA 4.0",
+  "pluginType": "static",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node status.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 5000
+  },
+  "refreshIntervalCron": "*/30 * * * * *",
+  "configSchema": {
+    "PROJECTFORGE_STATUS_PATH": {
+      "type": "string",
+      "description": "状态摘要路径；相对中央服务器根目录。修改核心状态路径时必须同步此处。",
+      "default": "AppData/ServerProjectForge/status.json"
+    },
+    "STATUS_MAX_AGE_SECONDS": {
+      "type": "integer",
+      "description": "超过该时间即报告状态过期。",
+      "default": 120
+    },
+    "STATUS_PROJECT_IDS": {
+      "type": "string",
+      "description": "只注入指定工程 ID，逗号分隔；空为最近 20 个授权工程。",
+      "default": ""
+    }
+  },
+  "capabilities": {
+    "systemPromptPlaceholders": [
+      {
+        "placeholder": "VCPServerProjectForgeStatus",
+        "description": "中央工程状态的语义折叠摘要；不包含源码和完整报告。"
+      }
+    ]
+  }
+}
